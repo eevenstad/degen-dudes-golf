@@ -96,8 +96,28 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
           setLocalScores(map)
           setSavedHoles(saved)
         }
+        // Auto-select group from onboarding name (if not already selected)
+        if (selectedGroup === null && data?.groups) {
+          try {
+            const savedName = localStorage.getItem('degen_player_name')
+            if (savedName && savedName !== 'guest') {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const matchedGroup = (data.groups as any[]).find((g: any) =>
+                g.group_players?.some((gp: any) =>
+                  gp.players?.name?.toLowerCase() === savedName.toLowerCase()
+                )
+              )
+              if (matchedGroup) {
+                setSelectedGroup(matchedGroup.group_number)
+              }
+            }
+          } catch {
+            // localStorage not available
+          }
+        }
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDay])
 
   const currentHole = dayData?.holes.find(h => h.hole_number === selectedHole)

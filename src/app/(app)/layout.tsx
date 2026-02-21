@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header'
 import MobileNav from '@/components/layout/MobileNav'
+import OnboardingModal from '@/components/OnboardingModal'
 
 export default function AppLayout({
   children,
@@ -13,6 +14,7 @@ export default function AppLayout({
         {children}
       </main>
       <MobileNav />
+      <OnboardingModal />
     </div>
   )
 }

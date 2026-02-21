@@ -1,6 +1,14 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import HelpButton from '@/components/HelpButton'
+
+const dashboardHelpSections = [
+  {
+    title: 'The Desert Duel — Home',
+    content: 'This is your tournament hub. See the current USA vs Europe score, quick-jump to any page, and check which groups are active. Scores and standings update live as your group plays.',
+  },
+]
 
 async function getDashboardData() {
   const supabase = createAdminClient()
@@ -302,6 +310,7 @@ export default async function DashboardPage() {
           ))}
         </div>
       )}
+      <HelpButton title="The Desert Duel — Home" sections={dashboardHelpSections} />
     </div>
   )
 }

@@ -1,5 +1,13 @@
 import { getLeaderboardData } from '@/app/actions/data'
 import Link from 'next/link'
+import HelpButton from '@/components/HelpButton'
+
+const playerHelpSections = [
+  {
+    title: 'Player Scorecard',
+    content: 'Full hole-by-hole scorecard for this player across all 3 days. Shows gross and net scores. Score colors: 🟡 Eagle, 🔴 Birdie, ⬜ Par, 🟢 Bogey, ⬛ Double+.',
+  },
+]
 
 export default async function PlayerPage({
   params,
@@ -163,6 +171,7 @@ export default async function PlayerPage({
       {playerScores.length === 0 && (
         <div className="text-center py-8" style={{ color: '#5C5C2E' }}>No scores recorded yet</div>
       )}
+      <HelpButton title="Player Scorecard" sections={playerHelpSections} />
     </div>
   )
 }
