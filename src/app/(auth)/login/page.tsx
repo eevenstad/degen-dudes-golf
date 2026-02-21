@@ -62,7 +62,7 @@ function LoginForm() {
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <Image
-              src="/assets/logo-clean.jpg"
+              src="/assets/logo.png"
               alt="The Desert Duel"
               width={140}
               height={140}

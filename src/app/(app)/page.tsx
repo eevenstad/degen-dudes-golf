@@ -103,7 +103,7 @@ export default async function DashboardPage() {
       <div className="text-center pt-2">
         <div className="flex justify-center mb-3">
           <Image
-            src="/assets/logo-clean.jpg"
+            src="/assets/logo.png"
             alt="The Desert Duel"
             width={120}
             height={120}

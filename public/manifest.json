@@ -10,12 +10,12 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/assets/logo-clean.jpg",
+      "src": "/assets/logo.png",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "/assets/logo-clean.jpg",
+      "src": "/assets/logo.png",
       "sizes": "512x512",
       "type": "image/jpeg"
     }
