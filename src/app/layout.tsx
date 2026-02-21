@@ -48,7 +48,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Desert Duel" />
-        <link rel="apple-touch-icon" href="/assets/logo.jpg" />
+        <link rel="apple-touch-icon" href="/assets/logo-clean.jpg" />
         <meta name="theme-color" content="#2D4A1E" />
       </head>
       <body
