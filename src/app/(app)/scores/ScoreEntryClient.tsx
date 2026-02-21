@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { getDayData } from '@/app/actions/data'
-import { saveScore } from '@/app/actions/scores'
+import { saveScore, undoLastScore } from '@/app/actions/scores'
 import { calcStrokesOnHole, calcNetScore } from '@/lib/scoring'
 
 interface Course {
@@ -70,7 +71,9 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     teeAssignments: TeeAssignment[]
   } | null>(null)
   const [localScores, setLocalScores] = useState<Map<string, number>>(new Map())
+  const [savedHoles, setSavedHoles] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [undoing, setUndoing] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
 
   const netMaxOverPar = parseInt(settings.net_max_over_par || '3')
@@ -84,10 +87,14 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
         // Initialize local scores from existing data
         if (data?.scores) {
           const map = new Map<string, number>()
+          const saved = new Set<string>()
           data.scores.forEach(s => {
-            map.set(`${s.player_id}-${s.hole_number}`, s.gross_score)
+            const key = `${s.player_id}-${s.hole_number}`
+            map.set(key, s.gross_score)
+            saved.add(key)
           })
           setLocalScores(map)
+          setSavedHoles(saved)
         }
       })
     }
@@ -148,6 +155,14 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     }
 
     if (allSuccess) {
+      // Mark these as saved
+      const newSaved = new Set(savedHoles)
+      groupPlayers.forEach(gp => {
+        if (localScores.has(scoreKey(gp.player_id, selectedHole))) {
+          newSaved.add(scoreKey(gp.player_id, selectedHole))
+        }
+      })
+      setSavedHoles(newSaved)
       setSaveMessage('Saved!')
       // Advance to next hole
       if (selectedHole < 18) {
@@ -158,6 +173,30 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
       }
     }
     setSaving(false)
+  }
+
+  // Undo last score for a specific player on current hole
+  const handleUndo = async (playerId: string) => {
+    if (!dayData || !currentHole) return
+    const playerName = groupPlayers.find(gp => gp.player_id === playerId)?.players?.name || 'player'
+    const confirmed = window.confirm(`Undo last score entry for ${playerName} on Hole ${selectedHole}?`)
+    if (!confirmed) return
+
+    setUndoing(true)
+    const result = await undoLastScore(playerId, dayData.course.id, selectedHole)
+    if (result.success && result.restored !== undefined) {
+      setLocalScores(prev => {
+        const next = new Map(prev)
+        next.set(scoreKey(playerId, selectedHole), result.restored!)
+        return next
+      })
+      setSaveMessage(`Undone — restored to ${result.restored}`)
+      setTimeout(() => setSaveMessage(''), 2000)
+    } else {
+      setSaveMessage(`Undo failed: ${result.error}`)
+      setTimeout(() => setSaveMessage(''), 3000)
+    }
+    setUndoing(false)
   }
 
   // Count completed holes for the group
@@ -177,7 +216,12 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   if (!selectedDay) {
     return (
       <div className="p-4 space-y-4">
-        <h2 className="text-xl font-bold text-yellow-400 text-center">Select Day</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-yellow-400">Select Day</h2>
+          <Link href="/history" className="text-xs text-green-400 hover:text-yellow-400 transition-colors">
+            History →
+          </Link>
+        </div>
         <div className="space-y-3">
           {courses.map(course => (
             <button
@@ -372,6 +416,21 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
                   )}
                 </div>
               </div>
+
+              {/* Undo button — only if this hole has a saved score */}
+              {savedHoles.has(scoreKey(player.id, selectedHole)) && (
+                <div className="flex justify-end mb-2">
+                  <button
+                    onClick={() => handleUndo(player.id)}
+                    disabled={undoing}
+                    className="text-xs px-2 py-1 rounded bg-orange-900/40 text-orange-400 
+                               border border-orange-800/50 hover:bg-orange-900/60 transition-all
+                               disabled:opacity-40"
+                  >
+                    ↩ Undo
+                  </button>
+                </div>
+              )}
 
               {/* Score input */}
               <div className="flex items-center justify-center gap-4">

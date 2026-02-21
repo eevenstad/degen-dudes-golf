@@ -3,6 +3,153 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calcStrokesOnHole, calcNetScore } from '@/lib/scoring'
 
+export interface ScoreHistoryEntry {
+  id: string
+  score_id: string
+  previous_gross: number
+  new_gross: number
+  changed_by: string | null
+  changed_at: string
+  scores?: {
+    player_id: string
+    hole_number: number
+    course_id: string
+    players?: { name: string }
+    courses?: { name: string; day_number: number }
+  }
+}
+
+export async function getScoreHistory(limit = 50): Promise<ScoreHistoryEntry[]> {
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('score_history')
+    .select(`
+      id, score_id, previous_gross, new_gross, changed_by, changed_at,
+      scores(
+        player_id, hole_number, course_id,
+        players(name),
+        courses(name, day_number)
+      )
+    `)
+    .order('changed_at', { ascending: false })
+    .limit(limit)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data as unknown) as ScoreHistoryEntry[]) || []
+}
+
+export async function undoLastScore(
+  playerId: string,
+  courseId: string,
+  holeNumber: number
+): Promise<{ success: boolean; error?: string; restored?: number }> {
+  try {
+    const supabase = createAdminClient()
+
+    // 1. Find the current score
+    const { data: currentScore } = await supabase
+      .from('scores')
+      .select('id, gross_score')
+      .eq('player_id', playerId)
+      .eq('course_id', courseId)
+      .eq('hole_number', holeNumber)
+      .single()
+
+    if (!currentScore) {
+      return { success: false, error: 'No score found to undo' }
+    }
+
+    // 2. Find the most recent history entry for this score
+    const { data: history } = await supabase
+      .from('score_history')
+      .select('id, previous_gross, new_gross')
+      .eq('score_id', currentScore.id)
+      .order('changed_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (!history) {
+      return { success: false, error: 'No history to undo' }
+    }
+
+    // 3. Get hole + handicap data to recalculate
+    const { data: hole } = await supabase
+      .from('holes')
+      .select('par, handicap_rank')
+      .eq('course_id', courseId)
+      .eq('hole_number', holeNumber)
+      .single()
+
+    const { data: pta } = await supabase
+      .from('player_tee_assignments')
+      .select('course_handicap')
+      .eq('player_id', playerId)
+      .eq('course_id', courseId)
+      .single()
+
+    const { data: course } = await supabase
+      .from('courses')
+      .select('day_number')
+      .eq('id', courseId)
+      .single()
+
+    const { data: groupPlayers } = await supabase
+      .from('group_players')
+      .select('playing_handicap, group_id, groups!inner(day_number)')
+      .eq('player_id', playerId)
+      .eq('groups.day_number', course?.day_number ?? 1)
+
+    const { data: setting } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'net_max_over_par')
+      .single()
+    const netMaxOverPar = setting ? parseInt(setting.value) : 3
+
+    const restoredGross = history.previous_gross
+    const ch = pta?.course_handicap ?? 0
+    const ph = groupPlayers?.[0]?.playing_handicap ?? 0
+    const chStrokes = hole ? calcStrokesOnHole(ch, hole.handicap_rank) : 0
+    const phStrokes = hole ? calcStrokesOnHole(ph, hole.handicap_rank) : 0
+    const netScore = hole ? calcNetScore(restoredGross, chStrokes, hole.par, netMaxOverPar) : restoredGross
+    const phScore = hole ? calcNetScore(restoredGross, phStrokes, hole.par, netMaxOverPar) : restoredGross
+
+    // 4. Log this undo in history
+    await supabase.from('score_history').insert({
+      score_id: currentScore.id,
+      previous_gross: currentScore.gross_score,
+      new_gross: restoredGross,
+      changed_by: 'undo',
+    })
+
+    // 5. Restore the score
+    const { error: updateError } = await supabase
+      .from('scores')
+      .update({
+        gross_score: restoredGross,
+        net_score: netScore,
+        ph_score: phScore,
+        ch_strokes: chStrokes,
+        ph_strokes: phStrokes,
+      })
+      .eq('id', currentScore.id)
+
+    if (updateError) {
+      return { success: false, error: updateError.message }
+    }
+
+    // 6. Recalculate match points if applicable
+    const playerGroup = groupPlayers?.[0]
+    if (playerGroup?.group_id) {
+      await updateMatchPoints(supabase, playerGroup.group_id, courseId, netMaxOverPar)
+    }
+
+    return { success: true, restored: restoredGross }
+  } catch (err) {
+    console.error('undoLastScore error:', err)
+    return { success: false, error: 'Failed to undo score' }
+  }
+}
+
 interface SaveScoreInput {
   playerId: string
   courseId: string
