@@ -1,0 +1,16 @@
+{
+  "name": "Degen Dudes Golf",
+  "short_name": "Degen Dudes",
+  "description": "Mobile-first golf scoring app for the Degen Dudes Ryder Cup",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#052e16",
+  "theme_color": "#052e16",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

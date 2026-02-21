@@ -1,8 +1,11 @@
-export default function ScoresPage() {
-  return (
-    <main className="min-h-screen p-4">
-      <h1 className="text-2xl font-bold">Score Entry</h1>
-      <p className="text-muted-foreground">Coming soon...</p>
-    </main>
-  )
+import { getCourses, getSettings } from '@/app/actions/data'
+import ScoreEntryClient from './ScoreEntryClient'
+
+export default async function ScoresPage() {
+  const [courses, settings] = await Promise.all([
+    getCourses(),
+    getSettings(),
+  ])
+
+  return <ScoreEntryClient courses={courses} settings={settings} />
 }

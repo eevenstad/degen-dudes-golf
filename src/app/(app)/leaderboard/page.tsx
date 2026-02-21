@@ -1,8 +1,7 @@
-export default function LeaderboardPage() {
-  return (
-    <main className="min-h-screen p-4">
-      <h1 className="text-2xl font-bold">Leaderboard</h1>
-      <p className="text-muted-foreground">Coming soon...</p>
-    </main>
-  )
+import { getLeaderboardData } from '@/app/actions/data'
+import LeaderboardClient from './LeaderboardClient'
+
+export default async function LeaderboardPage() {
+  const data = await getLeaderboardData()
+  return <LeaderboardClient initialData={data} />
 }

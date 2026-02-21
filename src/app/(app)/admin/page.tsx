@@ -1,8 +1,20 @@
-export default function AdminPage() {
+import { getPlayers, getCourses, getSettings, getTeeAssignments } from '@/app/actions/data'
+import AdminClient from './AdminClient'
+
+export default async function AdminPage() {
+  const [players, courses, settings, teeAssignments] = await Promise.all([
+    getPlayers(),
+    getCourses(),
+    getSettings(),
+    getTeeAssignments(),
+  ])
+
   return (
-    <main className="min-h-screen p-4">
-      <h1 className="text-2xl font-bold">Admin</h1>
-      <p className="text-muted-foreground">Coming soon...</p>
-    </main>
+    <AdminClient
+      players={players}
+      courses={courses}
+      settings={settings}
+      teeAssignments={teeAssignments}
+    />
   )
 }
