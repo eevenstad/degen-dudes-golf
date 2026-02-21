@@ -1,16 +1,23 @@
 {
-  "name": "Degen Dudes Golf",
-  "short_name": "Degen Dudes",
-  "description": "Mobile-first golf scoring app for the Degen Dudes Ryder Cup",
-  "start_url": "/",
+  "name": "The Desert Duel",
+  "short_name": "Desert Duel",
+  "description": "The Desert Duel — Palm Springs 2026 Golf Tournament",
+  "theme_color": "#2D4A1E",
+  "background_color": "#1A1A0A",
   "display": "standalone",
-  "background_color": "#052e16",
-  "theme_color": "#052e16",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64",
-      "type": "image/x-icon"
+      "src": "/assets/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/assets/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
     }
   ]
 }
