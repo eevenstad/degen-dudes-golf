@@ -162,6 +162,131 @@ export async function getTeesForCourse(courseId: string) {
   return data || []
 }
 
+// Create a new group with players
+export async function createGroup(input: {
+  dayNumber: number
+  groupNumber: number
+  format: string
+  playerIds: string[]
+}) {
+  const supabase = createAdminClient()
+
+  // 1. Insert the group
+  const { data: group, error: groupError } = await supabase
+    .from('groups')
+    .insert({
+      day_number: input.dayNumber,
+      group_number: input.groupNumber,
+      format: input.format,
+    })
+    .select('id')
+    .single()
+
+  if (groupError || !group) {
+    return { success: false, error: groupError?.message || 'Failed to create group' }
+  }
+
+  // 2. Get course_handicaps for these players on this day
+  const { data: course } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('day_number', input.dayNumber)
+    .single()
+
+  let phMap = new Map<string, number>()
+  if (course) {
+    const { data: teeAssignments } = await supabase
+      .from('player_tee_assignments')
+      .select('player_id, course_handicap')
+      .eq('course_id', course.id)
+      .in('player_id', input.playerIds)
+
+    if (teeAssignments && teeAssignments.length > 0) {
+      const minCH = Math.min(...teeAssignments.map(ta => ta.course_handicap))
+      teeAssignments.forEach(ta => {
+        phMap.set(ta.player_id, ta.course_handicap - minCH)
+      })
+    }
+  }
+
+  // 3. Insert group_players
+  const groupPlayers = input.playerIds.map(pid => ({
+    group_id: group.id,
+    player_id: pid,
+    playing_handicap: phMap.get(pid) ?? 0,
+  }))
+
+  const { error: gpError } = await supabase
+    .from('group_players')
+    .insert(groupPlayers)
+
+  if (gpError) {
+    // Rollback the group
+    await supabase.from('groups').delete().eq('id', group.id)
+    return { success: false, error: gpError.message }
+  }
+
+  return { success: true, groupId: group.id }
+}
+
+// Create a new match
+export async function createMatch(input: {
+  groupId: string
+  matchNumber: number
+  format: string
+  teamAPlayerIds: string[]
+  teamBPlayerIds: string[]
+  teamALabel?: string
+  teamBLabel?: string
+}) {
+  const supabase = createAdminClient()
+
+  // 1. Insert the match
+  const { data: match, error: matchError } = await supabase
+    .from('matches')
+    .insert({
+      group_id: input.groupId,
+      match_number: input.matchNumber,
+      format: input.format,
+      team_a_label: input.teamALabel || 'USA',
+      team_b_label: input.teamBLabel || 'Europe',
+      team_a_points: 0,
+      team_b_points: 0,
+      status: 'not_started',
+    })
+    .select('id')
+    .single()
+
+  if (matchError || !match) {
+    return { success: false, error: matchError?.message || 'Failed to create match' }
+  }
+
+  // 2. Insert match_players for side A
+  const sideAPlayers = input.teamAPlayerIds.map(pid => ({
+    match_id: match.id,
+    player_id: pid,
+    side: 'a',
+  }))
+
+  // 3. Insert match_players for side B
+  const sideBPlayers = input.teamBPlayerIds.map(pid => ({
+    match_id: match.id,
+    player_id: pid,
+    side: 'b',
+  }))
+
+  const { error: mpError } = await supabase
+    .from('match_players')
+    .insert([...sideAPlayers, ...sideBPlayers])
+
+  if (mpError) {
+    await supabase.from('matches').delete().eq('id', match.id)
+    return { success: false, error: mpError.message }
+  }
+
+  return { success: true, matchId: match.id }
+}
+
 // Admin mutations
 export async function updatePlayerTeam(playerId: string, team: 'USA' | 'Europe' | null) {
   const supabase = createAdminClient()
