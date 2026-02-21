@@ -17,3 +17,4 @@ npm run dev
 - Supabase (PostgreSQL, Auth, Real-time)
 - Tailwind CSS + shadcn/ui
 - Vercel (hosting)
+
