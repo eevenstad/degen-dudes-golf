@@ -2,13 +2,14 @@
 
 import { useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { verifyPin } from '@/app/actions/auth'
 
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-900 to-green-950">
-        <div className="text-green-400 animate-pulse text-lg">Loading...</div>
+      <main className="min-h-screen flex items-center justify-center" style={{ background: '#1A1A0A' }}>
+        <div className="animate-pulse text-lg" style={{ color: '#9A9A50' }}>Loading...</div>
       </main>
     }>
       <LoginForm />
@@ -55,30 +56,50 @@ function LoginForm() {
   }, [pin, router, searchParams])
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-green-900 to-green-950">
-      <div className="w-full max-w-sm space-y-8 text-center">
-        <div>
-          <h1 className="text-4xl font-bold text-white">🏌️ Degen Dudes</h1>
-          <p className="text-green-300 mt-2 text-lg">Enter PIN to continue</p>
+    <main className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom, #1A3A2A, #1A1A0A)' }}>
+      <div className="w-full max-w-sm space-y-7 text-center">
+        {/* Logo + Title */}
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <Image
+              src="/assets/logo.jpg"
+              alt="The Desert Duel"
+              width={140}
+              height={140}
+              className="rounded-2xl shadow-2xl"
+              priority
+            />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black tracking-wide" style={{ color: '#D4A947' }}>
+              The Desert Duel
+            </h1>
+            <p className="text-sm mt-0.5 font-medium" style={{ color: '#9A9A50' }}>
+              Palm Springs 2026
+            </p>
+          </div>
         </div>
 
+        <p className="text-sm" style={{ color: '#9A9A50' }}>Enter PIN to continue</p>
+
         {/* PIN dots */}
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-4">
           {[0, 1, 2, 3].map(i => (
             <div
               key={i}
-              className={`w-4 h-4 rounded-full border-2 transition-all ${
-                i < pin.length
-                  ? 'bg-yellow-400 border-yellow-400 scale-110'
-                  : 'border-green-400'
-              }`}
+              className="w-4 h-4 rounded-full border-2 transition-all"
+              style={{
+                background: i < pin.length ? '#D4A947' : 'transparent',
+                borderColor: i < pin.length ? '#D4A947' : '#2D4A1E',
+                transform: i < pin.length ? 'scale(1.15)' : 'scale(1)',
+              }}
             />
           ))}
         </div>
 
         {/* Error message */}
         {error && (
-          <p className="text-red-400 text-sm font-medium animate-pulse">{error}</p>
+          <p className="text-sm font-medium animate-pulse" style={{ color: '#DC2626' }}>{error}</p>
         )}
 
         {/* Keypad */}
@@ -88,10 +109,8 @@ function LoginForm() {
               key={digit}
               onClick={() => handleDigit(digit)}
               disabled={loading}
-              className="h-16 w-full rounded-xl bg-green-800/60 text-white text-2xl font-bold
-                         hover:bg-green-700/80 active:bg-green-600 active:scale-95
-                         transition-all duration-100 border border-green-600/30
-                         disabled:opacity-50"
+              className="h-16 w-full rounded-xl text-2xl font-bold transition-all duration-100 active:scale-95 disabled:opacity-50"
+              style={{ background: 'rgba(26,58,42,0.8)', color: '#F5E6C3', border: '1px solid #2D4A1E' }}
             >
               {digit}
             </button>
@@ -99,30 +118,24 @@ function LoginForm() {
           <button
             onClick={handleDelete}
             disabled={loading}
-            className="h-16 w-full rounded-xl bg-green-800/40 text-green-300 text-lg font-medium
-                       hover:bg-green-700/60 active:bg-green-600 active:scale-95
-                       transition-all duration-100 border border-green-600/20
-                       disabled:opacity-50"
+            className="h-16 w-full rounded-xl text-lg font-medium transition-all duration-100 active:scale-95 disabled:opacity-50"
+            style={{ background: 'rgba(26,58,42,0.5)', color: '#9A9A50', border: '1px solid #2D4A1E' }}
           >
             ⌫
           </button>
           <button
             onClick={() => handleDigit('0')}
             disabled={loading}
-            className="h-16 w-full rounded-xl bg-green-800/60 text-white text-2xl font-bold
-                       hover:bg-green-700/80 active:bg-green-600 active:scale-95
-                       transition-all duration-100 border border-green-600/30
-                       disabled:opacity-50"
+            className="h-16 w-full rounded-xl text-2xl font-bold transition-all duration-100 active:scale-95 disabled:opacity-50"
+            style={{ background: 'rgba(26,58,42,0.8)', color: '#F5E6C3', border: '1px solid #2D4A1E' }}
           >
             0
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading || pin.length < 4}
-            className="h-16 w-full rounded-xl bg-yellow-500 text-green-900 text-lg font-bold
-                       hover:bg-yellow-400 active:bg-yellow-300 active:scale-95
-                       transition-all duration-100
-                       disabled:opacity-40 disabled:cursor-not-allowed"
+            className="h-16 w-full rounded-xl text-lg font-bold transition-all duration-100 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: '#D4A947', color: '#1A1A0A' }}
           >
             {loading ? '...' : 'GO'}
           </button>

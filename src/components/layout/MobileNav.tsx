@@ -15,7 +15,10 @@ export default function MobileNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-green-800 bg-green-950 pb-safe">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 border-t pb-safe"
+      style={{ background: '#1A1A0A', borderColor: '#2D4A1E' }}
+    >
       <div className="flex items-center justify-around h-16 px-1">
         {navItems.map(item => {
           const isActive = pathname === item.href || 
@@ -24,12 +27,8 @@ export default function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-full h-full rounded-lg
-                transition-colors ${
-                isActive
-                  ? 'text-yellow-400'
-                  : 'text-green-400 hover:text-green-200'
-              }`}
+              className="flex flex-col items-center justify-center w-full h-full rounded-lg transition-colors"
+              style={{ color: isActive ? '#D4A947' : '#9A9A50' }}
             >
               <span className="text-xl leading-none">{item.icon}</span>
               <span className="text-[10px] font-medium mt-0.5">{item.label}</span>

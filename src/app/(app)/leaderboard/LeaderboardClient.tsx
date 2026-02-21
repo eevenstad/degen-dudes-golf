@@ -76,7 +76,6 @@ export default function LeaderboardClient({ initialData }: Props) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'scores' },
         () => {
-          // Refresh data when scores change
           window.location.reload()
         }
       )
@@ -93,11 +92,9 @@ export default function LeaderboardClient({ initialData }: Props) {
     const rounds = data.courses.map(course => {
       const courseScores = playerScores.filter(s => s.course_id === course.id)
       const courseHoles = data.holes.filter(h => h.course_id === course.id)
-      const coursePar = courseHoles.reduce((sum, h) => sum + h.par, 0)
       const thru = courseScores.length
       const gross = courseScores.reduce((sum, s) => sum + s.gross_score, 0)
       const net = courseScores.reduce((sum, s) => sum + (s.net_score ?? s.gross_score), 0)
-      // Par for completed holes only
       const completedPar = courseHoles
         .filter(h => courseScores.some(s => s.hole_number === h.hole_number))
         .reduce((sum, h) => sum + h.par, 0)
@@ -107,7 +104,6 @@ export default function LeaderboardClient({ initialData }: Props) {
         gross,
         net,
         par: completedPar,
-        courseTotalPar: coursePar,
         thru,
       }
     })
@@ -117,19 +113,11 @@ export default function LeaderboardClient({ initialData }: Props) {
       totalGross: rounds.reduce((s, r) => s + r.gross, 0),
       totalNet: rounds.reduce((s, r) => s + r.net, 0),
       totalPar: rounds.reduce((s, r) => s + r.par, 0),
-      rounds: rounds.map(r => ({
-        dayNumber: r.dayNumber,
-        courseName: r.courseName,
-        gross: r.gross,
-        net: r.net,
-        par: r.par,
-        thru: r.thru,
-      })),
+      rounds,
       thruTotal: rounds.reduce((s, r) => s + r.thru, 0),
     }
   })
 
-  // Sort by net score (lower is better), only rank players with scores
   const ranked = entries
     .filter(e => e.thruTotal > 0)
     .sort((a, b) => {
@@ -139,7 +127,6 @@ export default function LeaderboardClient({ initialData }: Props) {
     })
   const unranked = entries.filter(e => e.thruTotal === 0)
 
-  // Team scores
   const hasTeams = data.players.some(p => p.team !== null)
   const usaNet = ranked.filter(e => e.player.team === 'USA').reduce((s, e) => s + (e.totalNet - e.totalPar), 0)
   const europeNet = ranked.filter(e => e.player.team === 'Europe').reduce((s, e) => s + (e.totalNet - e.totalPar), 0)
@@ -151,6 +138,17 @@ export default function LeaderboardClient({ initialData }: Props) {
     return diff > 0 ? `+${diff}` : `${diff}`
   }
 
+  const relColor = (net: number, par: number) => {
+    if (par === 0) return '#F5E6C3'
+    const diff = net - par
+    if (diff < 0) return '#DC2626'
+    if (diff === 0) return '#F5E6C3'
+    return '#9A9A50'
+  }
+
+  const rankColor = (idx: number) =>
+    idx === 0 ? '#D4A947' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#C17A2A' : '#9A9A50'
+
   return (
     <div className="p-4 space-y-4">
       {/* Team toggle */}
@@ -158,17 +156,19 @@ export default function LeaderboardClient({ initialData }: Props) {
         <div className="flex gap-2">
           <button
             onClick={() => setShowTeams(false)}
-            className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
-              !showTeams ? 'bg-yellow-500 text-green-900' : 'bg-green-800 text-green-300'
-            }`}
+            className="flex-1 py-2 rounded-lg font-bold text-sm transition-all"
+            style={!showTeams
+              ? { background: '#D4A947', color: '#1A1A0A' }
+              : { background: '#1A3A2A', color: '#9A9A50' }}
           >
             Individual
           </button>
           <button
             onClick={() => setShowTeams(true)}
-            className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
-              showTeams ? 'bg-yellow-500 text-green-900' : 'bg-green-800 text-green-300'
-            }`}
+            className="flex-1 py-2 rounded-lg font-bold text-sm transition-all"
+            style={showTeams
+              ? { background: '#D4A947', color: '#1A1A0A' }
+              : { background: '#1A3A2A', color: '#9A9A50' }}
           >
             Teams
           </button>
@@ -177,10 +177,13 @@ export default function LeaderboardClient({ initialData }: Props) {
 
       {/* Team standings */}
       {showTeams && hasTeams && (
-        <div className="rounded-xl border border-green-800 overflow-hidden">
-          <div className="grid grid-cols-2 divide-x divide-green-800">
-            <div className={`p-4 text-center ${usaNet <= europeNet ? 'bg-blue-900/40' : 'bg-blue-900/20'}`}>
-              <div className="text-blue-400 font-bold text-lg">🇺🇸 USA</div>
+        <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#2D4A1E' }}>
+          <div className="grid grid-cols-2 divide-x" style={{ borderColor: '#2D4A1E' }}>
+            <div
+              className="p-4 text-center"
+              style={{ background: usaNet <= europeNet ? 'rgba(92,92,46,0.4)' : 'rgba(92,92,46,0.15)' }}
+            >
+              <div className="font-bold text-lg" style={{ color: '#9A9A50' }}>🫡 USA</div>
               <div className="text-3xl font-bold text-white mt-1">
                 {formatRelative(
                   ranked.filter(e => e.player.team === 'USA').reduce((s, e) => s + e.totalNet, 0),
@@ -188,8 +191,11 @@ export default function LeaderboardClient({ initialData }: Props) {
                 )}
               </div>
             </div>
-            <div className={`p-4 text-center ${europeNet <= usaNet ? 'bg-red-900/40' : 'bg-red-900/20'}`}>
-              <div className="text-red-400 font-bold text-lg">🇪🇺 Europe</div>
+            <div
+              className="p-4 text-center"
+              style={{ background: europeNet <= usaNet ? 'rgba(193,122,42,0.4)' : 'rgba(193,122,42,0.15)' }}
+            >
+              <div className="font-bold text-lg" style={{ color: '#E09030' }}>🌍 Europe</div>
               <div className="text-3xl font-bold text-white mt-1">
                 {formatRelative(
                   ranked.filter(e => e.player.team === 'Europe').reduce((s, e) => s + e.totalNet, 0),
@@ -202,9 +208,9 @@ export default function LeaderboardClient({ initialData }: Props) {
       )}
 
       {/* Leaderboard table */}
-      <div className="rounded-xl border border-green-800 overflow-hidden">
-        <div className="bg-green-900 px-3 py-2">
-          <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-1 text-xs font-medium text-green-400">
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#2D4A1E' }}>
+        <div className="px-3 py-2" style={{ background: '#1A3A2A' }}>
+          <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-1 text-xs font-medium" style={{ color: '#9A9A50' }}>
             <span>#</span>
             <span>Player</span>
             <span className="text-right">Today</span>
@@ -213,50 +219,43 @@ export default function LeaderboardClient({ initialData }: Props) {
           </div>
         </div>
 
-        <div className="divide-y divide-green-800/50">
+        <div>
           {ranked.map((entry, idx) => {
             const todayRound = entry.rounds.find(r => r.thru > 0 && r.dayNumber === Math.max(
               ...entry.rounds.filter(r2 => r2.thru > 0).map(r2 => r2.dayNumber)
             ))
             const todayRelative = todayRound ? formatRelative(todayRound.net, todayRound.par) : '—'
             const totalRelative = formatRelative(entry.totalNet, entry.totalPar)
-
-            const teamColor = entry.player.team === 'USA' 
-              ? 'border-l-4 border-l-blue-500' 
-              : entry.player.team === 'Europe'
-                ? 'border-l-4 border-l-red-500'
-                : ''
+            const teamBorderColor = entry.player.team === 'USA' ? '#9A9A50'
+              : entry.player.team === 'Europe' ? '#C17A2A' : 'transparent'
 
             return (
               <Link
                 key={entry.player.id}
                 href={`/player/${encodeURIComponent(entry.player.name)}`}
-                className={`grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-1 px-3 py-3 items-center
-                  hover:bg-green-800/30 transition-colors ${teamColor}`}
+                className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-1 px-3 py-3 items-center transition-colors"
+                style={{
+                  borderBottom: '1px solid rgba(45,74,30,0.4)',
+                  borderLeft: `3px solid ${teamBorderColor}`,
+                }}
               >
-                <span className={`text-sm font-bold ${
-                  idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-green-400'
-                }`}>
+                <span className="text-sm font-bold" style={{ color: rankColor(idx) }}>
                   {idx + 1}
                 </span>
                 <span className="font-medium text-white truncate text-sm">
                   {entry.player.name}
                 </span>
-                <span className={`text-right text-sm font-medium ${
-                  todayRound && todayRound.net < todayRound.par ? 'text-red-400'
-                    : todayRound && todayRound.net === todayRound.par ? 'text-green-300'
-                    : 'text-white'
-                }`}>
+                <span className="text-right text-sm font-medium" style={{
+                  color: todayRound ? relColor(todayRound.net, todayRound.par) : '#9A9A50'
+                }}>
                   {todayRelative}
                 </span>
-                <span className={`text-right text-sm font-bold ${
-                  entry.totalNet < entry.totalPar ? 'text-red-400'
-                    : entry.totalNet === entry.totalPar ? 'text-green-300'
-                    : 'text-white'
-                }`}>
+                <span className="text-right text-sm font-bold" style={{
+                  color: relColor(entry.totalNet, entry.totalPar)
+                }}>
                   {totalRelative}
                 </span>
-                <span className="text-right text-xs text-green-500">
+                <span className="text-right text-xs" style={{ color: '#5C5C2E' }}>
                   {todayRound?.thru || 0}
                 </span>
               </Link>
@@ -266,13 +265,14 @@ export default function LeaderboardClient({ initialData }: Props) {
           {unranked.map(entry => (
             <div
               key={entry.player.id}
-              className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-1 px-3 py-3 items-center opacity-50"
+              className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-1 px-3 py-3 items-center opacity-40"
+              style={{ borderBottom: '1px solid rgba(45,74,30,0.3)' }}
             >
-              <span className="text-sm text-green-600">—</span>
-              <span className="text-sm text-green-500">{entry.player.name}</span>
-              <span className="text-right text-xs text-green-600">—</span>
-              <span className="text-right text-xs text-green-600">—</span>
-              <span className="text-right text-xs text-green-600">0</span>
+              <span className="text-sm" style={{ color: '#2D4A1E' }}>—</span>
+              <span className="text-sm" style={{ color: '#9A9A50' }}>{entry.player.name}</span>
+              <span className="text-right text-xs" style={{ color: '#2D4A1E' }}>—</span>
+              <span className="text-right text-xs" style={{ color: '#2D4A1E' }}>—</span>
+              <span className="text-right text-xs" style={{ color: '#2D4A1E' }}>0</span>
             </div>
           ))}
         </div>
@@ -280,17 +280,17 @@ export default function LeaderboardClient({ initialData }: Props) {
 
       {/* Round-by-round breakdown */}
       {ranked.length > 0 && (
-        <div className="rounded-xl border border-green-800 overflow-hidden">
-          <div className="bg-green-900 px-3 py-2 font-bold text-sm text-green-300">
+        <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#2D4A1E' }}>
+          <div className="px-3 py-2 font-bold text-sm" style={{ background: '#1A3A2A', color: '#9A9A50' }}>
             Round Breakdown
           </div>
-          <div className="divide-y divide-green-800/50">
+          <div>
             {ranked.map(entry => (
-              <div key={entry.player.id} className="px-3 py-2">
+              <div key={entry.player.id} className="px-3 py-2" style={{ borderBottom: '1px solid rgba(45,74,30,0.3)' }}>
                 <div className="font-medium text-white text-sm mb-1">{entry.player.name}</div>
                 <div className="flex gap-3 text-xs">
                   {entry.rounds.map(r => (
-                    <div key={r.dayNumber} className={`${r.thru === 0 ? 'text-green-600' : 'text-green-300'}`}>
+                    <div key={r.dayNumber} style={{ color: r.thru === 0 ? '#2D4A1E' : '#9A9A50' }}>
                       D{r.dayNumber}: {r.thru > 0 ? `${formatRelative(r.net, r.par)} (${r.thru})` : '—'}
                     </div>
                   ))}

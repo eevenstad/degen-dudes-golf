@@ -1,4 +1,4 @@
-import { getPlayers, getCourses, getLeaderboardData } from '@/app/actions/data'
+import { getLeaderboardData } from '@/app/actions/data'
 import Link from 'next/link'
 
 export default async function PlayerPage({
@@ -16,23 +16,32 @@ export default async function PlayerPage({
     return (
       <div className="p-4 text-center">
         <h1 className="text-xl font-bold text-white">Player not found</h1>
-        <Link href="/leaderboard" className="text-yellow-400 mt-2 block">← Back to Leaderboard</Link>
+        <Link href="/leaderboard" className="mt-2 block" style={{ color: '#D4A947' }}>← Back to Leaderboard</Link>
       </div>
     )
   }
 
   const playerScores = data.scores.filter(s => s.player_id === player.id)
 
+  const scoreColor = (gross: number, par: number) => {
+    const diff = gross - par
+    if (diff <= -2) return '#D4A947'  // eagle = gold
+    if (diff === -1) return '#DC2626' // birdie = red
+    if (diff === 0) return '#F5E6C3'  // par = cream
+    if (diff === 1) return '#9A9A50'  // bogey = olive
+    return '#5C5C2E'                  // double+ = dark olive
+  }
+
   return (
     <div className="p-4 space-y-4">
       {/* Player header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white">{player.name}</h1>
-        <div className="flex items-center justify-center gap-3 mt-1 text-sm text-green-400">
-          <span>HI: {player.handicap_index}</span>
+        <div className="flex items-center justify-center gap-3 mt-1 text-sm">
+          <span style={{ color: '#9A9A50' }}>HI: {player.handicap_index}</span>
           {player.team && (
-            <span className={player.team === 'USA' ? 'text-blue-400' : 'text-red-400'}>
-              {player.team === 'USA' ? '🇺🇸' : '🇪🇺'} {player.team}
+            <span style={{ color: player.team === 'USA' ? '#9A9A50' : '#E09030' }}>
+              {player.team === 'USA' ? '🫡' : '🌍'} {player.team}
             </span>
           )}
         </div>
@@ -53,7 +62,6 @@ export default async function PlayerPage({
           .filter(h => courseScores.some(s => s.hole_number === h.hole_number))
           .reduce((s, h) => s + h.par, 0)
 
-        // Split into front 9 and back 9
         const front9Holes = courseHoles.filter(h => h.hole_number <= 9)
         const back9Holes = courseHoles.filter(h => h.hole_number > 9)
 
@@ -61,14 +69,14 @@ export default async function PlayerPage({
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-green-400">
+                <tr style={{ color: '#9A9A50' }}>
                   <th className="px-1 py-1 text-left">Hole</th>
                   {holes.map(h => (
                     <th key={h.hole_number} className="px-1 py-1 w-7 text-center">{h.hole_number}</th>
                   ))}
                   <th className="px-1 py-1 text-center font-bold">Tot</th>
                 </tr>
-                <tr className="text-green-500">
+                <tr style={{ color: '#5C5C2E' }}>
                   <td className="px-1 py-0.5">Par</td>
                   {holes.map(h => (
                     <td key={h.hole_number} className="px-1 py-0.5 text-center">{h.par}</td>
@@ -80,18 +88,15 @@ export default async function PlayerPage({
               </thead>
               <tbody>
                 <tr>
-                  <td className="px-1 py-1 text-green-400">Gross</td>
+                  <td className="px-1 py-1" style={{ color: '#9A9A50' }}>Gross</td>
                   {holes.map(h => {
                     const score = courseScores.find(s => s.hole_number === h.hole_number)
-                    const diff = score ? score.gross_score - h.par : 0
                     return (
-                      <td key={h.hole_number} className={`px-1 py-1 text-center font-medium ${
-                        !score ? 'text-green-600'
-                          : diff < 0 ? 'text-red-400'
-                          : diff === 0 ? 'text-green-300'
-                          : diff === 1 ? 'text-yellow-400'
-                          : 'text-orange-400'
-                      }`}>
+                      <td
+                        key={h.hole_number}
+                        className="px-1 py-1 text-center font-medium"
+                        style={{ color: score ? scoreColor(score.gross_score, h.par) : '#2D4A1E' }}
+                      >
                         {score?.gross_score ?? '—'}
                       </td>
                     )
@@ -104,16 +109,16 @@ export default async function PlayerPage({
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-1 py-1 text-green-400">Net</td>
+                  <td className="px-1 py-1" style={{ color: '#9A9A50' }}>Net</td>
                   {holes.map(h => {
                     const score = courseScores.find(s => s.hole_number === h.hole_number)
                     return (
-                      <td key={h.hole_number} className="px-1 py-1 text-center text-green-300">
+                      <td key={h.hole_number} className="px-1 py-1 text-center" style={{ color: '#F5E6C3' }}>
                         {score?.net_score ?? '—'}
                       </td>
                     )
                   })}
-                  <td className="px-1 py-1 text-center font-bold text-green-200">
+                  <td className="px-1 py-1 text-center font-bold" style={{ color: '#D4A947' }}>
                     {holes.reduce((s, h) => {
                       const sc = courseScores.find(scr => scr.hole_number === h.hole_number)
                       return s + (sc?.net_score ?? 0)
@@ -126,30 +131,27 @@ export default async function PlayerPage({
         )
 
         return (
-          <div key={course.id} className="rounded-xl border border-green-800 overflow-hidden">
-            <div className="bg-green-900 px-3 py-2 flex items-center justify-between">
-              <span className="font-bold text-green-300">Day {course.day_number}: {course.name}</span>
-              <div className="text-xs text-green-400">
-                {courseScores.length}/18 • Gross: {totalGross} • Net: {totalNet}
+          <div key={course.id} className="rounded-xl border overflow-hidden" style={{ borderColor: '#2D4A1E' }}>
+            <div className="px-3 py-2 flex items-center justify-between" style={{ background: '#1A3A2A' }}>
+              <span className="font-bold" style={{ color: '#9A9A50' }}>Day {course.day_number}: {course.name}</span>
+              <div className="text-xs" style={{ color: '#5C5C2E' }}>
+                {courseScores.length}/18 • Gross: {totalGross}
               </div>
             </div>
-            <div className="p-2 space-y-1">
-              {/* Front 9 */}
-              <div className="text-[10px] text-green-500 px-1 font-medium">FRONT 9</div>
+            <div className="p-2 space-y-1" style={{ background: '#1A1A0A' }}>
+              <div className="text-[10px] px-1 font-medium" style={{ color: '#5C5C2E' }}>FRONT 9</div>
               {renderNine(front9Holes)}
-              {/* Back 9 */}
-              <div className="text-[10px] text-green-500 px-1 font-medium mt-2">BACK 9</div>
+              <div className="text-[10px] px-1 font-medium mt-2" style={{ color: '#5C5C2E' }}>BACK 9</div>
               {renderNine(back9Holes)}
             </div>
-            {/* Totals */}
-            <div className="bg-green-900/50 px-3 py-2 flex justify-between text-sm">
-              <span className="text-green-400">
-                Total: <span className="text-white font-bold">{totalGross}</span> gross
+            <div className="px-3 py-2 flex justify-between text-sm" style={{ background: 'rgba(26,58,42,0.5)' }}>
+              <span style={{ color: '#9A9A50' }}>
+                Total: <span className="font-bold text-white">{totalGross}</span> gross
               </span>
-              <span className="text-green-400">
-                Net: <span className="text-yellow-400 font-bold">{totalNet}</span>
+              <span style={{ color: '#9A9A50' }}>
+                Net: <span className="font-bold" style={{ color: '#D4A947' }}>{totalNet}</span>
                 {' '}
-                <span className="text-green-500">
+                <span style={{ color: '#5C5C2E' }}>
                   ({totalNet - totalPar >= 0 ? '+' : ''}{totalNet - totalPar})
                 </span>
               </span>
@@ -159,7 +161,7 @@ export default async function PlayerPage({
       })}
 
       {playerScores.length === 0 && (
-        <div className="text-center text-green-500 py-8">No scores recorded yet</div>
+        <div className="text-center py-8" style={{ color: '#5C5C2E' }}>No scores recorded yet</div>
       )}
     </div>
   )

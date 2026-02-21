@@ -217,8 +217,8 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-yellow-400">Select Day</h2>
-          <Link href="/history" className="text-xs text-green-400 hover:text-yellow-400 transition-colors">
+          <h2 className="text-xl font-bold" style={{ color: '#D4A947' }}>Select Day</h2>
+          <Link href="/history" className="text-xs transition-colors" style={{ color: '#9A9A50' }}>
             History →
           </Link>
         </div>
@@ -227,14 +227,14 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
             <button
               key={course.id}
               onClick={() => setSelectedDay(course.day_number)}
-              className="w-full p-6 rounded-xl bg-green-800 border border-green-700
-                         text-left hover:bg-green-700 active:scale-[0.98] transition-all"
+              className="w-full p-6 rounded-xl border text-left active:scale-[0.98] transition-all"
+              style={{ background: 'rgba(26,58,42,0.6)', borderColor: '#2D4A1E' }}
             >
               <div className="text-2xl font-bold text-white">
                 Day {course.day_number}
               </div>
-              <div className="text-green-300 text-lg mt-1">{course.name}</div>
-              <div className="text-green-500 text-sm">Par {course.par_total}</div>
+              <div className="text-lg mt-1" style={{ color: '#9A9A50' }}>{course.name}</div>
+              <div className="text-sm" style={{ color: '#5C5C2E' }}>Par {course.par_total}</div>
             </button>
           ))}
         </div>
@@ -246,7 +246,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   if (!dayData) {
     return (
       <div className="p-4 text-center">
-        <div className="text-green-400 text-lg animate-pulse">Loading...</div>
+        <div className="text-lg animate-pulse" style={{ color: '#9A9A50' }}>Loading...</div>
       </div>
     )
   }
@@ -257,14 +257,15 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
       <div className="p-4 space-y-4">
         <button
           onClick={() => setSelectedDay(null)}
-          className="text-green-400 text-sm font-medium"
+          className="text-sm font-medium"
+          style={{ color: '#9A9A50' }}
         >
           ← Back to Days
         </button>
-        <h2 className="text-xl font-bold text-yellow-400 text-center">
+        <h2 className="text-xl font-bold text-center" style={{ color: '#D4A947' }}>
           Day {selectedDay}: {dayData.course.name}
         </h2>
-        <p className="text-green-400 text-center text-sm">Select Group</p>
+        <p className="text-center text-sm" style={{ color: '#9A9A50' }}>Select Group</p>
         <div className="space-y-3">
           {dayData.groups.map(group => {
             const players = group.group_players
@@ -273,14 +274,14 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
               <button
                 key={group.id}
                 onClick={() => setSelectedGroup(group.group_number)}
-                className="w-full p-5 rounded-xl bg-green-800 border border-green-700
-                           text-left hover:bg-green-700 active:scale-[0.98] transition-all"
+                className="w-full p-5 rounded-xl border text-left active:scale-[0.98] transition-all"
+                style={{ background: 'rgba(26,58,42,0.6)', borderColor: '#2D4A1E' }}
               >
                 <div className="flex items-center justify-between">
                   <div className="text-xl font-bold text-white">
                     Group {group.group_number}
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-green-700 text-green-300">
+                  <span className="text-xs px-2 py-1 rounded-full" style={{ background: '#2D4A1E', color: '#9A9A50' }}>
                     {formatLabel}
                   </span>
                 </div>
@@ -288,7 +289,8 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
                   {players.map(gp => (
                     <span
                       key={gp.id}
-                      className="text-sm px-2 py-0.5 rounded bg-green-700/50 text-green-200"
+                      className="text-sm px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(26,58,42,0.8)', color: '#F5E6C3' }}
                     >
                       {gp.players.name}
                     </span>
@@ -314,24 +316,25 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem-4rem)]">
       {/* Top bar: Course + Group info */}
-      <div className="bg-green-900 border-b border-green-800 px-3 py-2 flex items-center justify-between">
+      <div className="border-b px-3 py-2 flex items-center justify-between" style={{ background: '#1A3A2A', borderColor: '#2D4A1E' }}>
         <button
           onClick={() => { setSelectedGroup(null); setSelectedHole(1) }}
-          className="text-green-400 text-sm"
+          className="text-sm"
+          style={{ color: '#9A9A50' }}
         >
           ← Groups
         </button>
         <div className="text-center">
-          <div className="text-xs text-green-400">Day {selectedDay} • Group {selectedGroup}</div>
-          <div className="text-xs text-green-500">{completedHoles()}/18 holes</div>
+          <div className="text-xs" style={{ color: '#9A9A50' }}>Day {selectedDay} • Group {selectedGroup}</div>
+          <div className="text-xs" style={{ color: '#5C5C2E' }}>{completedHoles()}/18 holes</div>
         </div>
-        <div className="text-xs text-green-500">
+        <div className="text-xs" style={{ color: '#5C5C2E' }}>
           {currentGroup?.format.replace(/_/g, ' ')}
         </div>
       </div>
 
       {/* Hole selector - scrollable */}
-      <div className="bg-green-900/50 border-b border-green-800 px-2 py-2">
+      <div className="border-b px-2 py-2" style={{ background: 'rgba(26,58,42,0.4)', borderColor: '#2D4A1E' }}>
         <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
           {dayData.holes.map(hole => {
             const isActive = hole.hole_number === selectedHole
@@ -340,13 +343,11 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
               <button
                 key={hole.hole_number}
                 onClick={() => setSelectedHole(hole.hole_number)}
-                className={`flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold transition-all
-                  ${isActive
-                    ? 'bg-yellow-500 text-green-900'
-                    : hasScore
-                      ? 'bg-green-700 text-green-200'
-                      : 'bg-green-800/50 text-green-400'
-                  }`}
+                className="flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold transition-all"
+                style={{
+                  background: isActive ? '#D4A947' : hasScore ? '#2D4A1E' : 'rgba(26,58,42,0.4)',
+                  color: isActive ? '#1A1A0A' : hasScore ? '#9A9A50' : '#5C5C2E',
+                }}
               >
                 {hole.hole_number}
               </button>
@@ -357,13 +358,13 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
 
       {/* Current hole info */}
       {currentHole && (
-        <div className="bg-green-900/30 px-4 py-3 flex items-center justify-between border-b border-green-800/50">
+        <div className="px-4 py-3 flex items-center justify-between border-b" style={{ background: 'rgba(26,58,42,0.3)', borderColor: '#2D4A1E' }}>
           <div>
             <span className="text-2xl font-bold text-white">Hole {selectedHole}</span>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-yellow-400">Par {currentHole.par}</div>
-            <div className="text-xs text-green-500">HDCP {currentHole.handicap_rank}</div>
+            <div className="text-lg font-bold" style={{ color: '#D4A947' }}>Par {currentHole.par}</div>
+            <div className="text-xs" style={{ color: '#5C5C2E' }}>HDCP {currentHole.handicap_rank}</div>
           </div>
         </div>
       )}
@@ -385,12 +386,13 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
           return (
             <div
               key={gp.id}
-              className="rounded-xl bg-green-800/60 border border-green-700/50 p-4"
+              className="rounded-xl border p-4"
+              style={{ background: 'rgba(26,58,42,0.5)', borderColor: '#2D4A1E' }}
             >
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <span className="font-bold text-white text-lg">{player.name}</span>
-                  <div className="text-xs text-green-400">
+                  <div className="text-xs" style={{ color: '#9A9A50' }}>
                     CH: {ch} • PH: {ph} • {teeName}
                   </div>
                 </div>
@@ -399,18 +401,22 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
                   {chStrokes > 0 && (
                     <div className="flex gap-0.5 mr-2">
                       {Array.from({ length: chStrokes }).map((_, i) => (
-                        <div key={i} className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                        <div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background: '#D4A947' }} />
                       ))}
                     </div>
                   )}
                   {netScore !== null && (
-                    <div className={`text-sm px-2 py-0.5 rounded font-medium ${
-                      netScore < (currentHole?.par ?? 4)
-                        ? 'bg-red-500/20 text-red-400'
-                        : netScore === (currentHole?.par ?? 4)
-                          ? 'bg-green-600/20 text-green-300'
-                          : 'bg-green-800/50 text-green-400'
-                    }`}>
+                    <div
+                      className="text-sm px-2 py-0.5 rounded font-medium"
+                      style={{
+                        background: netScore < (currentHole?.par ?? 4) ? 'rgba(220,38,38,0.2)'
+                          : netScore === (currentHole?.par ?? 4) ? 'rgba(26,58,42,0.6)'
+                          : 'rgba(26,26,10,0.6)',
+                        color: netScore < (currentHole?.par ?? 4) ? '#DC2626'
+                          : netScore === (currentHole?.par ?? 4) ? '#9A9A50'
+                          : '#5C5C2E',
+                      }}
+                    >
                       Net {netScore}
                     </div>
                   )}
@@ -436,9 +442,8 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={() => updateScore(player.id, (gross ?? currentHole?.par ?? 4) - 1)}
-                  className="w-14 h-14 rounded-xl bg-green-700 text-white text-2xl font-bold
-                             hover:bg-green-600 active:bg-green-500 active:scale-90
-                             transition-all flex items-center justify-center"
+                  className="w-14 h-14 rounded-xl text-2xl font-bold active:scale-90 transition-all flex items-center justify-center"
+                  style={{ background: '#1A3A2A', color: '#F5E6C3', border: '1px solid #2D4A1E' }}
                 >
                   −
                 </button>
@@ -447,29 +452,32 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
                   <div className="text-4xl font-bold text-white">
                     {gross ?? '—'}
                   </div>
-                  {gross !== undefined && currentHole && (
-                    <div className={`text-xs font-medium mt-0.5 ${
-                      gross < currentHole.par ? 'text-red-400'
-                        : gross === currentHole.par ? 'text-green-300'
-                        : gross === currentHole.par + 1 ? 'text-yellow-400'
-                        : 'text-orange-400'
-                    }`}>
-                      {gross - currentHole.par === 0 ? 'PAR'
-                        : gross - currentHole.par === -1 ? 'BIRDIE'
-                        : gross - currentHole.par === -2 ? 'EAGLE'
-                        : gross - currentHole.par === 1 ? 'BOGEY'
-                        : gross - currentHole.par === 2 ? 'DOUBLE'
-                        : gross - currentHole.par > 2 ? `+${gross - currentHole.par}`
-                        : `${gross - currentHole.par}`}
-                    </div>
-                  )}
+                  {gross !== undefined && currentHole && (() => {
+                    const diff = gross - currentHole.par
+                    const label = diff === 0 ? 'PAR'
+                      : diff === -2 ? 'EAGLE'
+                      : diff === -1 ? 'BIRDIE'
+                      : diff === 1 ? 'BOGEY'
+                      : diff === 2 ? 'DOUBLE'
+                      : diff > 2 ? `+${diff}`
+                      : `${diff}`
+                    const color = diff <= -2 ? '#D4A947'    // eagle = gold
+                      : diff === -1 ? '#DC2626'             // birdie = red
+                      : diff === 0 ? '#F5E6C3'              // par = cream
+                      : diff === 1 ? '#9A9A50'              // bogey = olive
+                      : '#5C5C2E'                           // double+ = dark
+                    return (
+                      <div className="text-xs font-medium mt-0.5" style={{ color }}>
+                        {label}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <button
                   onClick={() => updateScore(player.id, (gross ?? (currentHole?.par ?? 4) - 1) + 1)}
-                  className="w-14 h-14 rounded-xl bg-green-700 text-white text-2xl font-bold
-                             hover:bg-green-600 active:bg-green-500 active:scale-90
-                             transition-all flex items-center justify-center"
+                  className="w-14 h-14 rounded-xl text-2xl font-bold active:scale-90 transition-all flex items-center justify-center"
+                  style={{ background: '#1A3A2A', color: '#F5E6C3', border: '1px solid #2D4A1E' }}
                 >
                   +
                 </button>
@@ -480,11 +488,12 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
       </div>
 
       {/* Save & Next button */}
-      <div className="border-t border-green-800 bg-green-950 px-4 py-3 safe-area-inset-bottom">
+      <div className="border-t px-4 py-3 safe-area-inset-bottom" style={{ borderColor: '#2D4A1E', background: '#1A1A0A' }}>
         {saveMessage && (
-          <div className={`text-center text-sm mb-2 ${
-            saveMessage.startsWith('Error') ? 'text-red-400' : 'text-green-400'
-          }`}>
+          <div
+            className="text-center text-sm mb-2"
+            style={{ color: saveMessage.startsWith('Error') || saveMessage.startsWith('Undo failed') ? '#DC2626' : '#9A9A50' }}
+          >
             {saveMessage}
           </div>
         )}
@@ -493,10 +502,8 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
           disabled={saving || !groupPlayers.some(gp =>
             localScores.has(scoreKey(gp.player_id, selectedHole))
           )}
-          className="w-full py-4 rounded-xl bg-yellow-500 text-green-900 font-bold text-lg
-                     hover:bg-yellow-400 active:bg-yellow-300 active:scale-[0.98]
-                     disabled:opacity-40 disabled:cursor-not-allowed
-                     transition-all"
+          className="w-full py-4 rounded-xl font-bold text-lg active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          style={{ background: '#D4A947', color: '#1A1A0A' }}
         >
           {saving ? 'Saving...' : selectedHole < 18 ? `Save & Next →` : 'Save Hole 18 ✓'}
         </button>

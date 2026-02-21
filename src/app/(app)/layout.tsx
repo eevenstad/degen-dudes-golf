@@ -7,7 +7,7 @@ export default function AppLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-green-950 text-white">
+    <div className="min-h-screen flex flex-col text-white" style={{ background: '#1A1A0A' }}>
       <Header />
       <main className="flex-1 pb-20">
         {children}
