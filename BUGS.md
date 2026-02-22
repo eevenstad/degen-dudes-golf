@@ -1,6 +1,6 @@
 # Degen Dudes — Bug & Polish Tracker
 
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 
 This file is the running list of known issues, polish items, and future improvements.
 Check this at the start of any new session working on the app.
@@ -15,23 +15,15 @@ All critical bugs have been addressed in Session 7. See below for status.
 
 ## 🟡 Should Fix (High Value, Low Risk)
 
-### BUG-S1: Score entry locked to player's own group
-- **What:** When `localStorage.degen_player_name` is set, Day 1 selection skips the group picker and jumps directly to that player's group. No way to enter scores for other groups.
-- **Fix:** Add a "Change Group" or "All Groups" button on the score entry group screen so any user can override auto-selection.
-- **Status:** Fixed in Session 7 (pending verification)
-
-### BUG-S2: Match creation requires groups pre-loaded in same session
-- **What:** The matches tab only shows groups in the "New Match" form if the user already clicked "Load Groups" in the groups tab during the same browser session. Fresh load = empty group dropdown.
-- **Fix:** Auto-load all groups when the matches tab is opened (or when the New Match form is opened).
-- **Status:** Fixed in Session 7 (pending verification)
+_(All items resolved — nothing remaining in this category.)_
 
 ---
 
 ## 🟢 Polish / Nice to Have (Post-Trip or If Time Permits)
 
-### POLISH-1: Help button missing on /history page
-- Every other page has a `?` help button (bottom right). History page is missing one.
-- Low priority — nobody will need help on history during the trip.
+### ~~POLISH-1: Help button missing on /history page~~ ✅ FIXED
+- ~~Every other page has a `?` help button (bottom right). History page is missing one.~~
+- Fixed: Session 14 (2026-02-22). Added HelpButton with "Score History" context.
 
 ### POLISH-2: Group duplicate prevention
 - Creating a group that already exists (same day + group number) silently creates a duplicate.
@@ -60,8 +52,8 @@ All critical bugs have been addressed in Session 7. See below for status.
 |-----|-----|--------|
 | Team assignment UI not re-rendering after save | Added `localPlayers` state, optimistic update | `000201e` |
 | Onboarding modal appearing on /admin and blocking clicks | Added `usePathname()` check, exclude `/admin` | `44abc1f` |
-| Match creation requires manual group pre-load | Auto-load groups when matches tab opens | TBD |
-| Score entry locked to player's own group | Added "Change Group" override button | TBD |
+| Match creation requires manual group pre-load | Auto-load groups when "New Match" clicked | `4e5d825` |
+| Score entry locked to player's own group | Added "Change group" link in score entry header | `4e5d825` |
 
 ---
 

@@ -1,5 +1,13 @@
 import { getScoreHistory } from '@/app/actions/scores'
 import Link from 'next/link'
+import HelpButton from '@/components/HelpButton'
+
+const historyHelpSections = [
+  {
+    title: 'Score History',
+    content: 'Every score change is logged here with who changed it, what the old and new values were, and when. Undo actions are tagged in orange. This is your audit trail if anything looks wrong.',
+  },
+]
 
 export default async function ScoreHistoryPage() {
   const history = await getScoreHistory(100)
@@ -90,6 +98,7 @@ export default async function ScoreHistoryPage() {
           })}
         </div>
       )}
+      <HelpButton title="Score History" sections={historyHelpSections} />
     </div>
   )
 }
