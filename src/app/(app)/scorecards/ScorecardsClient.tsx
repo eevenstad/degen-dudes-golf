@@ -69,18 +69,19 @@ function ScoreCell({
   par: number
   strokes: number
 }) {
+  // Gold tint background for holes where player gets strokes
+  const cellBg = strokes > 0 ? 'rgba(212, 169, 71, 0.15)' : 'transparent'
+
   if (gross === null) {
     return (
       <div
-        className="flex items-center justify-center relative"
-        style={{ width: 30, height: 38, minWidth: 30 }}
+        className="flex flex-col items-center justify-center"
+        style={{ width: 30, height: 38, minWidth: 30, background: cellBg, borderRadius: 3 }}
       >
         <span style={{ color: '#2D4A1E', fontSize: 12 }}>-</span>
         {strokes > 0 && (
-          <div className="absolute top-0.5 right-0.5 flex gap-px">
-            {Array.from({ length: strokes }).map((_, i) => (
-              <div key={i} className="rounded-full" style={{ width: 4, height: 4, background: '#000' }} />
-            ))}
+          <div style={{ fontSize: 8, color: '#D4A947', lineHeight: 1, marginTop: 1, fontWeight: 700 }}>
+            +{strokes}
           </div>
         )}
       </div>
@@ -133,18 +134,9 @@ function ScoreCell({
 
   return (
     <div
-      className="flex flex-col items-center justify-center relative"
-      style={{ width: 30, height: 38, minWidth: 30 }}
+      className="flex flex-col items-center justify-center"
+      style={{ width: 30, height: 38, minWidth: 30, background: cellBg, borderRadius: 3 }}
     >
-      {/* Stroke dots in top-right corner */}
-      {strokes > 0 && (
-        <div className="absolute top-0 right-0 flex gap-px">
-          {Array.from({ length: strokes }).map((_, i) => (
-            <div key={i} className="rounded-full" style={{ width: 4, height: 4, background: '#000' }} />
-          ))}
-        </div>
-      )}
-
       {/* Gross score with shape */}
       <div
         className="flex items-center justify-center font-bold"
@@ -159,12 +151,16 @@ function ScoreCell({
         {gross}
       </div>
 
-      {/* Net score subscript */}
-      {showNet && (
+      {/* Net score OR stroke count below the score */}
+      {showNet ? (
         <div style={{ fontSize: 9, color: '#9A9A50', lineHeight: 1, marginTop: 1 }}>
           {net}
         </div>
-      )}
+      ) : strokes > 0 ? (
+        <div style={{ fontSize: 8, color: '#D4A947', lineHeight: 1, marginTop: 1, fontWeight: 700 }}>
+          +{strokes}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -533,10 +529,20 @@ export default function ScorecardsClient({ initialData, teeAssignments }: Props)
               </div>
             ))}
             <div className="flex items-center gap-2 col-span-2">
-              <div className="flex gap-px">
-                <div className="rounded-full" style={{ width: 4, height: 4, background: '#000', border: '1px solid #555' }} />
+              <div
+                className="flex items-center justify-center text-[10px] font-bold"
+                style={{
+                  width: 18,
+                  height: 18,
+                  color: '#D4A947',
+                  background: 'rgba(212, 169, 71, 0.15)',
+                  borderRadius: 3,
+                  fontSize: 8,
+                }}
+              >
+                +1
               </div>
-              <span className="text-[10px]" style={{ color: '#9A9A50' }}>Black dot = stroke received on hole</span>
+              <span className="text-[10px]" style={{ color: '#9A9A50' }}>Gold tint + number = strokes received</span>
             </div>
           </div>
         </div>
