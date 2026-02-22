@@ -371,7 +371,7 @@ function CreateMatchForm({
 }
 
 // Admin PIN — separate from the app PIN
-const ADMIN_PIN = '7471'
+const ADMIN_PIN = '1313'
 
 export default function AdminClient({ players, courses, settings, teeAssignments }: Props) {
   const [unlocked, setUnlocked] = useState(false)
