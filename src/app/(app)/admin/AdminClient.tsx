@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { updatePlayerTeam, updateSetting, updateGroupFormat, createGroup, createMatch } from '@/app/actions/data'
 import { logout } from '@/app/actions/auth'
 import { getGroupsForDay } from '@/app/actions/data'
@@ -370,70 +369,9 @@ function CreateMatchForm({
   )
 }
 
-// Admin PIN — separate from the app PIN
-const ADMIN_PIN = '1313'
-
 export default function AdminClient({ players, courses, settings, teeAssignments }: Props) {
-  const [unlocked, setUnlocked] = useState(false)
-  const [pinInput, setPinInput] = useState('')
-  const [pinError, setPinError] = useState(false)
   const [tab, setTab] = useState<Tab>('players')
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    // Check if already unlocked this session
-    const stored = sessionStorage.getItem('admin_unlocked')
-    if (stored === 'true') setUnlocked(true)
-  }, [])
-
-  const handlePinSubmit = () => {
-    if (pinInput === ADMIN_PIN) {
-      sessionStorage.setItem('admin_unlocked', 'true')
-      setUnlocked(true)
-      setPinError(false)
-    } else {
-      setPinError(true)
-      setPinInput('')
-    }
-  }
-
-  if (!unlocked) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-        <div className="w-full max-w-xs space-y-4">
-          <div className="text-center">
-            <div className="text-3xl mb-2">⚙️</div>
-            <h1 className="text-xl font-bold text-white">Admin Access</h1>
-            <p className="text-xs mt-1" style={{ color: '#9A9A50' }}>Enter admin PIN to continue</p>
-          </div>
-          <input
-            type="password"
-            inputMode="numeric"
-            placeholder="PIN"
-            value={pinInput}
-            onChange={e => { setPinInput(e.target.value); setPinError(false) }}
-            onKeyDown={e => e.key === 'Enter' && handlePinSubmit()}
-            className="w-full rounded-xl px-4 py-3 text-center text-lg tracking-widest border text-white focus:outline-none"
-            style={{ background: '#1A3A2A', borderColor: pinError ? '#DC2626' : '#2D4A1E' }}
-            autoFocus
-          />
-          {pinError && (
-            <p className="text-xs text-center" style={{ color: '#DC2626' }}>Incorrect PIN</p>
-          )}
-          <button
-            onClick={handlePinSubmit}
-            className="w-full py-3 rounded-xl font-bold text-sm transition-all"
-            style={{ background: '#D4A947', color: '#1A1A0A' }}
-          >
-            Unlock
-          </button>
-          <div className="text-center">
-            <Link href="/" className="text-xs" style={{ color: '#5C5C2E' }}>← Back</Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
   const [message, setMessage] = useState('')
   const [localPlayers, setLocalPlayers] = useState(players)
   const [groupsData, setGroupsData] = useState<Record<number, GroupData[]>>({})

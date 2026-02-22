@@ -122,7 +122,10 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold" style={{ color: '#D4A947' }}>
           The Desert Duel
         </h1>
-        <p className="text-sm mt-0.5" style={{ color: '#9A9A50' }}>Palm Springs 2026</p>
+        <p className="text-sm mt-0.5" style={{ color: '#9A9A50' }}>
+          Palm Springs{' '}
+          <Link href="/admin" style={{ color: '#9A9A50', textDecoration: 'none' }}>2026</Link>
+        </p>
         {currentCourse && (
           <div className="mt-2 flex items-center justify-center gap-2">
             <span style={{ color: '#9A9A50' }} className="text-sm">Day {currentDay}</span>
@@ -194,13 +197,13 @@ export default async function DashboardPage() {
           Matches
         </Link>
         <Link
-          href="/admin"
+          href="/scorecards"
           className="flex flex-col items-center justify-center p-5 rounded-2xl font-bold text-lg
                      active:scale-95 transition-all border"
           style={{ background: 'rgba(26,26,10,0.8)', borderColor: '#2D4A1E', color: '#9A9A50' }}
         >
-          <span className="text-3xl mb-1">⚙️</span>
-          Admin
+          <span className="text-3xl mb-1">📋</span>
+          Scorecards
         </Link>
       </div>
 
