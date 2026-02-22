@@ -40,8 +40,9 @@ export interface MatchResult {
   holeResults: HoleResult[]
   teamATotalPoints: number
   teamBTotalPoints: number
-  teamAMatchPoints: number  // 1, 0.5, or 0
-  teamBMatchPoints: number  // 1, 0.5, or 0
+  teamAMatchPoints: number  // pointValue * (1, 0.5, or 0)
+  teamBMatchPoints: number  // pointValue * (1, 0.5, or 0)
+  pointValue: number        // 1 or 2 — match-level point value
   winner: 'A' | 'B' | 'tie'
 }
 
@@ -139,7 +140,8 @@ export function calcMatchResult(
   teamALabel: string,
   teamBLabel: string,
   holes: Array<{ hole_number: number; par: number; handicap_rank: number }>,
-  netMaxOverPar: number
+  netMaxOverPar: number,
+  pointValue: number = 1
 ): MatchResult {
   const holeResults: HoleResult[] = []
 
@@ -217,11 +219,11 @@ export function calcMatchResult(
 
   let teamAMatchPoints: number, teamBMatchPoints: number, winner: 'A' | 'B' | 'tie'
   if (teamATotalPoints > teamBTotalPoints) {
-    teamAMatchPoints = 1; teamBMatchPoints = 0; winner = 'A'
+    teamAMatchPoints = pointValue; teamBMatchPoints = 0; winner = 'A'
   } else if (teamBTotalPoints > teamATotalPoints) {
-    teamAMatchPoints = 0; teamBMatchPoints = 1; winner = 'B'
+    teamAMatchPoints = 0; teamBMatchPoints = pointValue; winner = 'B'
   } else {
-    teamAMatchPoints = 0.5; teamBMatchPoints = 0.5; winner = 'tie'
+    teamAMatchPoints = pointValue * 0.5; teamBMatchPoints = pointValue * 0.5; winner = 'tie'
   }
 
   return {
@@ -235,6 +237,7 @@ export function calcMatchResult(
     teamBTotalPoints,
     teamAMatchPoints,
     teamBMatchPoints,
+    pointValue,
     winner
   }
 }

@@ -311,6 +311,19 @@ export async function saveScore(input: SaveScoreInput): Promise<SaveScoreResult>
   }
 }
 
+// Get the day_number for a course (cached locally in the function call chain)
+async function getDayNumberForCourse(
+  supabase: ReturnType<typeof createAdminClient>,
+  courseId: string
+): Promise<number> {
+  const { data } = await supabase
+    .from('courses')
+    .select('day_number')
+    .eq('id', courseId)
+    .single()
+  return data?.day_number ?? 1
+}
+
 // Recalculate match points for a group after a score change
 async function updateMatchPoints(
   supabase: ReturnType<typeof createAdminClient>,
@@ -443,13 +456,35 @@ async function updateMatchPoints(
         else { teamAPoints = 0.5; teamBPoints = 0.5 }
       }
 
+      // Determine point value based on format and day number (Decision #8):
+      // - Pairs formats (best_ball_*, low_total) = 2 points regardless of day
+      // - Singles formats (singles_match, singles_stroke) = 1 point D1-D2, 2 points D3
+      const isPairs = match.format === 'best_ball_validation' || match.format === 'best_ball' || match.format === 'low_total'
+      const dayNumber = await getDayNumberForCourse(supabase, courseId)
+      const matchPointValue = isPairs ? 2 : dayNumber === 3 ? 2 : 1
+
+      // Apply point value: win = pointValue, tie = pointValue * 0.5, loss = 0
+      let scaledTeamAPoints = 0
+      let scaledTeamBPoints = 0
+      if (teamAPoints > teamBPoints) {
+        scaledTeamAPoints = matchPointValue
+        scaledTeamBPoints = 0
+      } else if (teamBPoints > teamAPoints) {
+        scaledTeamAPoints = 0
+        scaledTeamBPoints = matchPointValue
+      } else if (holesCompleted > 0) {
+        // Tie only counts when at least some holes are played
+        scaledTeamAPoints = matchPointValue * 0.5
+        scaledTeamBPoints = matchPointValue * 0.5
+      }
+
       // Update match status and points
       const status = holesCompleted === 0 ? 'not_started' : holesCompleted === 18 ? 'complete' : 'in_progress'
       await supabase
         .from('matches')
         .update({
-          team_a_points: teamAPoints,
-          team_b_points: teamBPoints,
+          team_a_points: scaledTeamAPoints,
+          team_b_points: scaledTeamBPoints,
           status,
         })
         .eq('id', match.id)

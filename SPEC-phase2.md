@@ -188,13 +188,13 @@ Ben's response (verbatim):
 
 **SCOPE: 34 items total**
 
-- [ ] 1a: Offline detection hook
-- [ ] 1b: localStorage score queue
-- [ ] 1c: Auto-sync on reconnect
-- [ ] 1d: Connection status indicator
-- [ ] 1e: Service worker app shell caching
-- [ ] 1f: Conflict handling
-- [ ] 1g: Manual offline test
+- [x] 1a: Offline detection hook
+- [x] 1b: localStorage score queue
+- [x] 1c: Auto-sync on reconnect
+- [x] 1d: Connection status indicator
+- [x] 1e: Service worker app shell caching
+- [x] 1f: Conflict handling
+- [ ] 1g: Manual offline test (Eric verifies on phone)
 - [ ] 2a: Island player design doc (MUST be approved before 2b-2g)
 - [ ] 2b: Point value system
 - [ ] 2c: Island match creation
@@ -212,8 +212,8 @@ Ben's response (verbatim):
 - [ ] 5a: Summary page/modal
 - [ ] 5b: Screenshot-friendly layout
 - [ ] 5c: Day selector
-- [ ] 6a: Vibration on save
-- [ ] 6b: Graceful fallback
+- [x] 6a: Vibration on save
+- [x] 6b: Graceful fallback
 - [ ] 7a: Matchup picker UI
 - [ ] 7b: Alternating picks
 - [ ] 7c: Auto-create matches

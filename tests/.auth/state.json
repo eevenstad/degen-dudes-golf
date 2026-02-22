@@ -5,7 +5,7 @@
       "value": "authenticated",
       "domain": "degen-dudes-golf.vercel.app",
       "path": "/",
-      "expires": 1774369040.983357,
+      "expires": 1774392411.679313,
       "httpOnly": true,
       "secure": true,
       "sameSite": "Lax"
