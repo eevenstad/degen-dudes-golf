@@ -94,13 +94,12 @@ function ScoreCell({
   let textColor = '#F5E6C3' // par default
 
   if (diff <= -2) {
-    // Eagle: gold double circle
+    // Eagle: gold double circle (use box-shadow for outer ring)
     textColor = '#D4A947'
     borderStyle = {
       borderRadius: '50%',
       border: '2px solid #D4A947',
-      outline: '2px solid #D4A947',
-      outlineOffset: '2px',
+      boxShadow: '0 0 0 3px #D4A947',
     }
   } else if (diff === -1) {
     // Birdie: red single circle
@@ -120,13 +119,12 @@ function ScoreCell({
       border: '2px solid #7C3AED',
     }
   } else {
-    // Double bogey+: orange double square
+    // Double bogey+: orange double square (use box-shadow for outer ring)
     textColor = '#E09030'
     borderStyle = {
       borderRadius: 2,
       border: '2px solid #E09030',
-      outline: '2px solid #E09030',
-      outlineOffset: '2px',
+      boxShadow: '0 0 0 3px #E09030',
     }
   }
 
@@ -526,8 +524,7 @@ export default function ScorecardsClient({ initialData, teeAssignments }: Props)
                     color,
                     borderRadius: shape.includes('circle') ? '50%' : shape === 'none' ? 0 : 2,
                     border: shape !== 'none' ? `2px solid ${color}` : 'none',
-                    outline: shape.includes('double') ? `2px solid ${color}` : 'none',
-                    outlineOffset: shape.includes('double') ? '2px' : undefined,
+                    boxShadow: shape.includes('double') ? `0 0 0 3px ${color}` : 'none',
                   }}
                 >
                   4
