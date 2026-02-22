@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getDayData } from '@/app/actions/data'
 import { saveScore, undoLastScore } from '@/app/actions/scores'
 import { calcStrokesOnHole, calcNetScore } from '@/lib/scoring'
+import { useOfflineSync } from '@/hooks/useOfflineSync'
 
 interface Course {
   id: string
@@ -76,6 +77,8 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   const [undoing, setUndoing] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [allowGroupOverride, setAllowGroupOverride] = useState(false)
+
+  const { isOnline, queueLength, syncing, needsRefresh, enqueueScore } = useOfflineSync()
 
   const netMaxOverPar = parseInt(settings.net_max_over_par || '3')
 
@@ -157,6 +160,35 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     setSaving(true)
     setSaveMessage('')
 
+    // Offline path: queue scores in localStorage, optimistically mark as saved
+    if (!isOnline) {
+      const newSaved = new Set(savedHoles)
+      groupPlayers.forEach(gp => {
+        const gross = localScores.get(scoreKey(gp.player_id, selectedHole))
+        if (gross === undefined) return
+        enqueueScore({
+          player_id: gp.player_id,
+          course_id: dayData.course.id,
+          hole_number: selectedHole,
+          gross_score: gross,
+          day_number: dayData.course.day_number,
+          timestamp: Date.now(),
+        })
+        newSaved.add(scoreKey(gp.player_id, selectedHole))
+      })
+      setSavedHoles(newSaved)
+      setSaveMessage('Saved offline — will sync when connected')
+      if (selectedHole < 18) {
+        setTimeout(() => {
+          setSelectedHole(selectedHole + 1)
+          setSaveMessage('')
+        }, 500)
+      }
+      setSaving(false)
+      return
+    }
+
+    // Online path: save via server action
     let allSuccess = true
     for (const gp of groupPlayers) {
       const gross = localScores.get(scoreKey(gp.player_id, selectedHole))
@@ -176,6 +208,10 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     }
 
     if (allSuccess) {
+      // Haptic feedback (Feature 6 — graceful fallback)
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50)
+      }
       // Mark these as saved
       const newSaved = new Set(savedHoles)
       groupPlayers.forEach(gp => {
@@ -362,8 +398,34 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
             Change group
           </button>
         </div>
-        <div className="text-xs" style={{ color: '#5C5C2E' }}>
-          {currentGroup?.format.replace(/_/g, ' ')}
+        {/* Connection status indicator (1d) */}
+        <div className="flex flex-col items-end gap-0.5">
+          {syncing ? (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#D4A947' }} />
+              <span className="text-xs" style={{ color: '#D4A947' }}>Syncing {queueLength}</span>
+            </div>
+          ) : !isOnline ? (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full" style={{ background: '#DC2626' }} />
+              <span className="text-xs" style={{ color: '#DC2626' }}>
+                {queueLength > 0 ? `${queueLength} queued` : 'Offline'}
+              </span>
+            </div>
+          ) : queueLength > 0 ? (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#D4A947' }} />
+              <span className="text-xs" style={{ color: '#D4A947' }}>{queueLength} syncing</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
+              <span className="text-xs" style={{ color: '#9A9A50' }}>Online</span>
+            </div>
+          )}
+          {!isOnline && queueLength > 0 && (
+            <span className="text-xs" style={{ color: '#5C5C2E' }}>Day {selectedDay}</span>
+          )}
         </div>
       </div>
 
@@ -523,6 +585,11 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
 
       {/* Save & Next button */}
       <div className="border-t px-4 py-3 safe-area-inset-bottom" style={{ borderColor: '#2D4A1E', background: '#1A1A0A' }}>
+        {needsRefresh && (
+          <div className="text-center text-sm mb-2 px-2 py-1 rounded" style={{ color: '#D4A947', background: 'rgba(212,169,71,0.1)', border: '1px solid rgba(212,169,71,0.3)' }}>
+            Some scores failed to sync — refresh to retry
+          </div>
+        )}
         {saveMessage && (
           <div
             className="text-center text-sm mb-2"
