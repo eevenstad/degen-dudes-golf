@@ -2,7 +2,7 @@
 
 import { useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Image from 'next/image'
+
 import { verifyPin } from '@/app/actions/auth'
 
 export default function LoginPage() {
@@ -61,13 +61,13 @@ function LoginForm() {
         {/* Logo + Title */}
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/assets/logo.png"
               alt="The Desert Duel"
               width={140}
               height={140}
               className="rounded-2xl shadow-2xl"
-              priority
             />
           </div>
           <div>
