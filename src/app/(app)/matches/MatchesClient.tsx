@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getMatchesForDay } from '@/app/actions/data'
+import { getIslandMatchIds } from '@/app/actions/island'
 import { createClient } from '@/lib/supabase/client'
 
 interface Course {
@@ -28,6 +29,7 @@ interface Match {
   team_a_points: number
   team_b_points: number
   status: string
+  point_value: number
   match_players: MatchPlayer[]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   groups: any
@@ -40,12 +42,17 @@ interface Props {
 export default function MatchesClient({ courses }: Props) {
   const [selectedDay, setSelectedDay] = useState(1)
   const [matches, setMatches] = useState<Match[]>([])
+  const [islandMatchIds, setIslandMatchIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
   const loadMatches = async (day: number) => {
     setLoading(true)
-    const data = await getMatchesForDay(day)
+    const [data, islandIds] = await Promise.all([
+      getMatchesForDay(day),
+      getIslandMatchIds(day),
+    ])
     setMatches(data as unknown as Match[])
+    setIslandMatchIds(new Set(islandIds))
     setLoading(false)
   }
 
@@ -103,17 +110,32 @@ export default function MatchesClient({ courses }: Props) {
             const aLeading = match.team_a_points > match.team_b_points
             const bLeading = match.team_b_points > match.team_a_points
             const tied = match.team_a_points === match.team_b_points
+            const isIsland = islandMatchIds.has(match.id)
 
             return (
               <div key={match.id} className="rounded-xl border overflow-hidden" style={{ borderColor: '#2D4A1E' }}>
                 {/* Match header */}
                 <div className="px-4 py-2 flex items-center justify-between" style={{ background: '#1A3A2A' }}>
-                  <span className="text-xs" style={{ color: '#9A9A50' }}>
-                    Group {match.groups?.group_number} • Match {match.match_number}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#2D4A1E', color: '#9A9A50' }}>
-                    {formatLabel(match.format)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: '#9A9A50' }}>
+                      Group {match.groups?.group_number} • Match {match.match_number}
+                    </span>
+                    {isIsland && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#C17A2A', color: '#F5E6C3' }}>
+                        ISLAND ⚡
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#2D4A1E', color: '#9A9A50' }}>
+                      {formatLabel(match.format)}
+                    </span>
+                    {match.point_value > 1 && (
+                      <span className="text-xs px-1.5 py-0.5 rounded-full font-bold" style={{ background: '#D4A947', color: '#1A1A0A' }}>
+                        {match.point_value}pt
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Score display */}

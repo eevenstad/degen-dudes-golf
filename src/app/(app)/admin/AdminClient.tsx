@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation'
 import { updatePlayerTeam, updateSetting, updateGroupFormat, createGroup, createMatch } from '@/app/actions/data'
 import { logout } from '@/app/actions/auth'
 import { getGroupsForDay } from '@/app/actions/data'
+import {
+  getIslandAssignments,
+  getEligibleIslandPlayers,
+  getEligibleIslandOpponents,
+  createIslandAssignment,
+  deleteIslandAssignment,
+  type IslandAssignment,
+  type EligiblePlayer,
+} from '@/app/actions/island'
 
 interface Player {
   id: string
@@ -52,7 +61,7 @@ interface Props {
   teeAssignments: TeeAssignment[]
 }
 
-type Tab = 'players' | 'groups' | 'matches' | 'tees' | 'settings'
+type Tab = 'players' | 'groups' | 'matches' | 'island' | 'tees' | 'settings'
 
 const FORMATS = [
   'best_ball_validation',
@@ -379,6 +388,15 @@ export default function AdminClient({ players, courses, settings, teeAssignments
   const [allGroupsFlat, setAllGroupsFlat] = useState<GroupData[]>([])
   const [showCreateGroup, setShowCreateGroup] = useState(false)
   const [showCreateMatch, setShowCreateMatch] = useState(false)
+  // Island state
+  const [islandAssignments, setIslandAssignments] = useState<IslandAssignment[]>([])
+  const [eligibleIslandPlayers, setEligibleIslandPlayers] = useState<EligiblePlayer[]>([])
+  const [eligibleOpponents, setEligibleOpponents] = useState<EligiblePlayer[]>([])
+  const [islandDay, setIslandDay] = useState(1)
+  const [selectedIslandPlayer, setSelectedIslandPlayer] = useState('')
+  const [selectedOpponentA, setSelectedOpponentA] = useState('')
+  const [selectedOpponentB, setSelectedOpponentB] = useState('')
+  const [islandLoading, setIslandLoading] = useState(false)
   const router = useRouter()
 
   const showMessage = (msg: string) => {
@@ -456,6 +474,64 @@ export default function AdminClient({ players, courses, settings, teeAssignments
     router.refresh()
   }
 
+  const loadIslandData = async () => {
+    setIslandLoading(true)
+    const fiveTeam = settings.five_player_team || 'USA'
+    const sixTeam = fiveTeam === 'USA' ? 'Europe' : 'USA'
+    const [assignments, eligible, opponents] = await Promise.all([
+      getIslandAssignments(),
+      getEligibleIslandPlayers(fiveTeam),
+      getEligibleIslandOpponents(sixTeam),
+    ])
+    setIslandAssignments(assignments)
+    setEligibleIslandPlayers(eligible)
+    setEligibleOpponents(opponents)
+    setSelectedIslandPlayer('')
+    setSelectedOpponentA('')
+    setSelectedOpponentB('')
+    setIslandLoading(false)
+  }
+
+  const handleCreateIsland = async () => {
+    if (!selectedIslandPlayer || !selectedOpponentA || !selectedOpponentB) {
+      showMessage('Error: Select all three players')
+      return
+    }
+    if (selectedOpponentA === selectedOpponentB) {
+      showMessage('Error: Opponents must be different players')
+      return
+    }
+    setSaving(true)
+    const result = await createIslandAssignment({
+      dayNumber: islandDay,
+      islandPlayerId: selectedIslandPlayer,
+      opponentAId: selectedOpponentA,
+      opponentBId: selectedOpponentB,
+    })
+    if (result.success) {
+      showMessage('Island assignment created!')
+      await loadIslandData()
+      router.refresh()
+    } else {
+      showMessage(`Error: ${result.error}`)
+    }
+    setSaving(false)
+  }
+
+  const handleDeleteIsland = async (id: string) => {
+    if (!confirm('Delete this island assignment and its matches?')) return
+    setSaving(true)
+    const result = await deleteIslandAssignment(id)
+    if (result.success) {
+      showMessage('Island assignment deleted')
+      await loadIslandData()
+      router.refresh()
+    } else {
+      showMessage(`Error: ${result.error}`)
+    }
+    setSaving(false)
+  }
+
   const tabStyle = (t: Tab) => ({
     background: tab === t ? '#D4A947' : 'transparent',
     color: tab === t ? '#1A1A0A' : '#9A9A50',
@@ -476,20 +552,22 @@ export default function AdminClient({ players, courses, settings, teeAssignments
 
       {/* Tab bar */}
       <div className="flex gap-1 rounded-xl p-1" style={{ background: '#1A3A2A' }}>
-        {(['players', 'groups', 'matches', 'tees', 'settings'] as Tab[]).map(t => (
+        {(['players', 'groups', 'matches', 'island', 'tees', 'settings'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => {
               setTab(t)
-              // Auto-load groups when switching to matches tab
               if (t === 'matches' && allGroupsFlat.length === 0) {
                 courses.forEach(c => loadGroups(c.day_number))
+              }
+              if (t === 'island') {
+                loadIslandData()
               }
             }}
             className="flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize"
             style={tabStyle(t)}
           >
-            {t}
+            {t === 'island' ? '🏝️' : t}
           </button>
         ))}
       </div>
@@ -635,6 +713,182 @@ export default function AdminClient({ players, courses, settings, teeAssignments
             <p className="text-xs" style={{ color: '#9A9A50' }}>
               Loading groups…
             </p>
+          )}
+        </div>
+      )}
+
+      {/* Island tab */}
+      {tab === 'island' && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold" style={{ color: '#C17A2A' }}>🏝️ Island Player Assignments</h3>
+          <p className="text-xs" style={{ color: '#9A9A50' }}>
+            5-player team: <strong style={{ color: '#F5E6C3' }}>{settings.five_player_team || 'USA'}</strong> — 
+            Change in Settings tab ({`"five_player_team"`})
+          </p>
+
+          {islandLoading ? (
+            <div className="text-center py-4 animate-pulse" style={{ color: '#9A9A50' }}>Loading...</div>
+          ) : (
+            <>
+              {/* Existing assignments */}
+              {islandAssignments.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium" style={{ color: '#9A9A50' }}>Current Assignments</h4>
+                  {islandAssignments.map(a => (
+                    <div key={a.id} className="rounded-xl border p-3" style={{ background: 'rgba(193,122,42,0.15)', borderColor: '#C17A2A' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm" style={{ color: '#E09030' }}>Day {a.day_number}</span>
+                        <button
+                          onClick={() => handleDeleteIsland(a.id)}
+                          disabled={saving}
+                          className="text-xs px-2 py-1 rounded-lg border transition-all"
+                          style={{ borderColor: 'rgba(139,26,26,0.4)', color: '#DC2626', background: 'rgba(139,26,26,0.1)' }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div>
+                          <span style={{ color: '#9A9A50' }}>Island: </span>
+                          <span className="font-medium" style={{ color: '#F5E6C3' }}>{a.island_player?.name}</span>
+                          <span className="text-xs ml-1" style={{ color: '#9A9A50' }}>({a.island_player?.team})</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#9A9A50' }}>vs </span>
+                          <span className="font-medium" style={{ color: '#F5E6C3' }}>{a.opponent_a?.name}</span>
+                          <span className="text-xs ml-1" style={{ color: '#9A9A50' }}>({a.opponent_a?.team})</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#9A9A50' }}>vs </span>
+                          <span className="font-medium" style={{ color: '#F5E6C3' }}>{a.opponent_b?.name}</span>
+                          <span className="text-xs ml-1" style={{ color: '#9A9A50' }}>({a.opponent_b?.team})</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* New assignment form */}
+              {islandAssignments.length < 3 && (
+                <div className="rounded-2xl border p-4 space-y-4" style={{ borderColor: '#C17A2A', background: 'rgba(26,26,10,0.9)' }}>
+                  <h4 className="font-bold text-sm" style={{ color: '#E09030' }}>New Island Assignment</h4>
+
+                  {/* Day selector */}
+                  <div>
+                    <label className="text-xs block mb-1" style={{ color: '#9A9A50' }}>Day</label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map(d => {
+                        const taken = islandAssignments.some(a => a.day_number === d)
+                        return (
+                          <button
+                            key={d}
+                            onClick={() => !taken && setIslandDay(d)}
+                            disabled={taken}
+                            className="flex-1 py-2 rounded-lg text-sm font-bold transition-all border"
+                            style={
+                              taken
+                                ? { background: '#1A3A2A', color: '#2D4A1E', borderColor: '#2D4A1E' }
+                                : islandDay === d
+                                  ? { background: '#C17A2A', color: '#1A1A0A', borderColor: '#C17A2A' }
+                                  : { background: 'rgba(26,58,42,0.3)', color: '#9A9A50', borderColor: '#2D4A1E' }
+                            }
+                          >
+                            Day {d} {taken ? '✓' : ''}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Island player (5-team) */}
+                  <div>
+                    <label className="text-xs block mb-1" style={{ color: '#9A9A50' }}>
+                      Island Player ({settings.five_player_team || 'USA'} - 5-player team)
+                    </label>
+                    {eligibleIslandPlayers.length === 0 ? (
+                      <p className="text-xs" style={{ color: '#2D4A1E' }}>No eligible players remaining</p>
+                    ) : (
+                      <select
+                        value={selectedIslandPlayer}
+                        onChange={e => setSelectedIslandPlayer(e.target.value)}
+                        className="w-full rounded-lg px-3 py-2 text-sm border text-white"
+                        style={{ background: '#1A3A2A', borderColor: '#2D4A1E' }}
+                      >
+                        <option value="">Select island player...</option>
+                        {eligibleIslandPlayers.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Opponent A (6-team) */}
+                  <div>
+                    <label className="text-xs block mb-1" style={{ color: '#9A9A50' }}>
+                      Opponent A ({(settings.five_player_team || 'USA') === 'USA' ? 'Europe' : 'USA'} - 6-player team)
+                    </label>
+                    {eligibleOpponents.length === 0 ? (
+                      <p className="text-xs" style={{ color: '#2D4A1E' }}>No eligible opponents remaining</p>
+                    ) : (
+                      <select
+                        value={selectedOpponentA}
+                        onChange={e => setSelectedOpponentA(e.target.value)}
+                        className="w-full rounded-lg px-3 py-2 text-sm border text-white"
+                        style={{ background: '#1A3A2A', borderColor: '#2D4A1E' }}
+                      >
+                        <option value="">Select opponent A...</option>
+                        {eligibleOpponents
+                          .filter(p => p.id !== selectedOpponentB)
+                          .map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Opponent B (6-team) */}
+                  <div>
+                    <label className="text-xs block mb-1" style={{ color: '#9A9A50' }}>
+                      Opponent B ({(settings.five_player_team || 'USA') === 'USA' ? 'Europe' : 'USA'} - 6-player team)
+                    </label>
+                    {eligibleOpponents.length === 0 ? (
+                      <p className="text-xs" style={{ color: '#2D4A1E' }}>No eligible opponents remaining</p>
+                    ) : (
+                      <select
+                        value={selectedOpponentB}
+                        onChange={e => setSelectedOpponentB(e.target.value)}
+                        className="w-full rounded-lg px-3 py-2 text-sm border text-white"
+                        style={{ background: '#1A3A2A', borderColor: '#2D4A1E' }}
+                      >
+                        <option value="">Select opponent B...</option>
+                        {eligibleOpponents
+                          .filter(p => p.id !== selectedOpponentA)
+                          .map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Submit */}
+                  <button
+                    onClick={handleCreateIsland}
+                    disabled={saving || !selectedIslandPlayer || !selectedOpponentA || !selectedOpponentB}
+                    className="w-full py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                    style={{ background: '#C17A2A', color: '#1A1A0A' }}
+                  >
+                    {saving ? 'Assigning...' : 'Assign Island Player'}
+                  </button>
+                </div>
+              )}
+
+              {islandAssignments.length === 3 && (
+                <div className="text-center py-4 text-sm" style={{ color: '#9A9A50' }}>
+                  All 3 days assigned ✓
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

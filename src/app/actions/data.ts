@@ -93,7 +93,7 @@ export async function getMatchesForDay(dayNumber: number) {
     .from('matches')
     .select(`
       id, group_id, match_number, format, team_a_label, team_b_label,
-      team_a_points, team_b_points, status,
+      team_a_points, team_b_points, status, point_value,
       match_players(player_id, side, players(name, team)),
       groups!inner(day_number, group_number)
     `)
