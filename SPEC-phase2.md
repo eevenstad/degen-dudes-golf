@@ -195,7 +195,7 @@ Ben's response (verbatim):
 - [x] 1e: Service worker app shell caching
 - [x] 1f: Conflict handling
 - [ ] 1g: Manual offline test (Eric verifies on phone)
-- [ ] 2a: Island player design doc (MUST be approved before 2b-2g)
+- [x] 2a: Island player design doc (approved by Eric 2026-02-22)
 - [x] 2b: Point value system
 - [ ] 2c: Island match creation
 - [ ] 2d: 2-on-1 match scoring
