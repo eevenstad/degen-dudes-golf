@@ -197,10 +197,10 @@ Ben's response (verbatim):
 - [ ] 1g: Manual offline test (Eric verifies on phone)
 - [x] 2a: Island player design doc (approved by Eric 2026-02-22)
 - [x] 2b: Point value system
-- [ ] 2c: Island match creation
-- [ ] 2d: 2-on-1 match scoring
-- [ ] 2e: Island player visibility
-- [ ] 2f: No-repeat enforcement
+- [x] 2c: Island match creation
+- [x] 2d: 2-on-1 match scoring
+- [x] 2e: Island player visibility
+- [x] 2f: No-repeat enforcement
 - [x] 2g: Point totals updated
 - [ ] 3a: Score update banner
 - [ ] 3b: Supabase realtime trigger
