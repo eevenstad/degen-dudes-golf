@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-const baseNavItems = [
+const navItems = [
   { href: '/', label: 'Home', icon: '🏠' },
   { href: '/scores', label: 'Scores', icon: '📝' },
   { href: '/scorecards', label: 'Cards', icon: '📋' },
@@ -12,19 +12,17 @@ const baseNavItems = [
   { href: '/matches', label: 'Matches', icon: '⚔️' },
 ]
 
-const adminNavItem = { href: '/admin', label: 'Admin', icon: '⚙️' }
-
 export default function MobileNav() {
   const pathname = usePathname()
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
 
   useEffect(() => {
-    const name = localStorage.getItem('degen_player_name')
-    const admins = ['Eric', 'Ben']
-    setIsAdmin(admins.includes(name || ''))
+    setMounted(true)
+    // Admin link removed from nav — access via secret path only
+    // const name = localStorage.getItem('degen_player_name')
+    // setShowAdmin(['Eric', 'Ben'].includes(name || ''))
   }, [])
-
-  const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems
 
   return (
     <nav
@@ -47,6 +45,8 @@ export default function MobileNav() {
             </Link>
           )
         })}
+        {/* Admin hidden — not in nav. Access via /admin directly. */}
+        {mounted && showAdmin && null}
       </div>
     </nav>
   )
