@@ -1,7 +1,7 @@
 # Degen Dudes Golf App — Scoring Test Suite Specification
 
 **Created:** 2026-02-22 by Opus 4.6
-**Status:** ACTIVE — implementation in progress
+**Status:** COMPLETE ✅ — 194/194 tests passing, all 18 phases done (2026-02-22)
 **Owner:** Eric (only Eric can modify deliverables or acceptance criteria)
 **Deadline:** Feb 26, 2026 (golf trip departure)
 **Original plan:** TESTING-PLAN.md (693 lines, created by Opus 4.6 in Session 9)
@@ -162,51 +162,51 @@ SCOPE: 18 total items
 - [x] **Phase 3: Scenario A Day 1** — tests 21-26 (49 tests)
   - Evidence: 49 passing across 6 files, commit 434e393
   - Session: 11 (2026-02-21)
-- [ ] **Phase 4: Scenario A Day 2** — seed + verify PGA West Mountain
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 5: Scenario A Day 3** — seed + verify Eagle Falls
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 6: Scenario B** — mixed realistic scores
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 7: Scenario C** — net cap stress test (gross=15)
-  - Evidence: _not started — note: test 23 partially covers this for Day 1 only_
-  - Session: _pending_
-- [ ] **Phase 8: Scenario D** — aces and eagles
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 9a: Match format — best_ball_validation** — Section 4a
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 9b: Match format — best_ball** — Section 4b
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 9c: Match format — low_total** — Section 4c
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 9d: Match format — singles_match (Eric vs Ben)** — Section 4d
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 9e: Match format — singles_match high HC** — Section 4e
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 9f: Match format — singles_stroke** — Section 4f
-  - Evidence: _not started_
-  - Session: _pending_
-- [ ] **Phase 10: Leaderboard all 3 days** — Section 6
-  - Evidence: _not started_
-  - Session: _pending_
+- [x] **Phase 4: Scenario A Day 2** — seed + verify PGA West Mountain
+  - Evidence: 7 passing in 28-scenario-a-day2.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 5: Scenario A Day 3** — seed + verify Eagle Falls
+  - Evidence: 7 passing in 29-scenario-a-day3.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 6: Scenario B** — mixed realistic scores
+  - Evidence: 6 passing in 31-scenario-b.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 7: Scenario C** — net cap stress test (gross=15)
+  - Evidence: 9 passing in 32-scenario-c.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 8: Scenario D** — aces and eagles
+  - Evidence: 8 passing in 33-scenario-d.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 9a: Match format — best_ball_validation** — Section 4a
+  - Evidence: passing in 34-match-formats.spec.ts (tests 9a/9b/9c/9d/9e/9f), commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 9b: Match format — best_ball** — Section 4b
+  - Evidence: passing in 34-match-formats.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 9c: Match format — low_total** — Section 4c
+  - Evidence: passing in 34-match-formats.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 9d: Match format — singles_match (Eric vs Ben)** — Section 4d
+  - Evidence: passing in 34-match-formats.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 9e: Match format — singles_match high HC** — Section 4e
+  - Evidence: passing in 34-match-formats.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 9f: Match format — singles_stroke** — Section 4f
+  - Evidence: passing in 34-match-formats.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
+- [x] **Phase 10: Leaderboard all 3 days** — Section 6
+  - Evidence: 7 passing in 30-leaderboard-all-days.spec.ts, commit f8b7c81
+  - Session: 13 (2026-02-22)
 - [x] **Phase 11: Multi-user concurrent entry** — 7 tests in 27-multi-user.spec.ts
   - Evidence: 7 passing, commit 159b6fa
   - Session: 12 (2026-02-22)
 - [x] **Phase 12: Visual walkthrough** — managed browser screenshots
   - Evidence: Screenshots taken of home, scorecards, strokes, leaderboard, admin. Session 12.
   - Session: 12 (2026-02-22)
-- [ ] **Full suite regression** — all tests pass when run in sequence after reset
-  - Evidence: _will be verified after all phases complete_
-  - Session: _pending_
+- [x] **Full suite regression** — all tests pass when run in sequence after reset
+  - Evidence: 194/194 passing, full reset → 20 through 34 run, commit f8b7c81
+  - Session: 13 (2026-02-22)
 
 ## Scope Hash
-18 items total. 4 complete (22%). 14 remaining.
+18 items total. 18 complete (100%). 0 remaining.
