@@ -1,0 +1,210 @@
+{
+  "backup_timestamp": "2026-02-21T20:18:05-07:00",
+  "players": [
+    {
+      "id": "06559478-aa82-4a0d-aa26-d239ae8414f4",
+      "name": "Ryan",
+      "handicap_index": 8.9,
+      "team": "USA",
+      "display_order": 1,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "2377121e-5093-4250-9459-9cec514d9ff4",
+      "name": "Kiki",
+      "handicap_index": 9.3,
+      "team": "Europe",
+      "display_order": 2,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "c407edd3-591f-4faf-afed-c6e156698b33",
+      "name": "Mack",
+      "handicap_index": 10.0,
+      "team": "USA",
+      "display_order": 3,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "8ba6e2af-35d9-42bb-9750-f35fcbb9746c",
+      "name": "Bruce",
+      "handicap_index": 10.6,
+      "team": "Europe",
+      "display_order": 4,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "57a4fdd1-6cac-4264-ad8d-809aef763ee1",
+      "name": "Matthew",
+      "handicap_index": 11.0,
+      "team": null,
+      "display_order": 5,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "5ac3e47e-68d3-4a66-a6ae-47376bdd9faf",
+      "name": "C-Pat",
+      "handicap_index": 11.5,
+      "team": null,
+      "display_order": 6,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "989f9143-2f6b-4060-8875-20feb87ead55",
+      "name": "Eric",
+      "handicap_index": 13.5,
+      "team": null,
+      "display_order": 7,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "e2fc862d-3f4b-49f7-ac6f-97abecaad00e",
+      "name": "Ben",
+      "handicap_index": 19.0,
+      "team": null,
+      "display_order": 8,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "e0928ef5-83fe-440c-8a1c-76704f4886af",
+      "name": "Gary",
+      "handicap_index": 22.1,
+      "team": "USA",
+      "display_order": 9,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "6e49119a-2050-4e50-be46-42c2e89451b8",
+      "name": "Chris",
+      "handicap_index": 30.0,
+      "team": "Europe",
+      "display_order": 10,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "2dcc566e-b465-431b-90a1-0f9791de614e",
+      "name": "Jauch",
+      "handicap_index": 36.0,
+      "team": "USA",
+      "display_order": 11,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    }
+  ],
+  "courses": [
+    {
+      "id": "9333b881-441e-43f0-9aa8-efe8f9dcd203",
+      "name": "Terra Lago North",
+      "day_number": 1,
+      "par_total": 72,
+      "created_at": "2026-02-21T21:10:32.170861+00:00"
+    },
+    {
+      "id": "fb74b2c0-b9df-4926-8867-13d83a2cdf7f",
+      "name": "PGA West Mountain",
+      "day_number": 2,
+      "par_total": 72,
+      "created_at": "2026-02-21T21:10:32.170861+00:00"
+    },
+    {
+      "id": "6a96b6d2-9271-4191-ba6c-da0232a9ca46",
+      "name": "Eagle Falls",
+      "day_number": 3,
+      "par_total": 72,
+      "created_at": "2026-02-21T21:10:32.170861+00:00"
+    }
+  ],
+  "scores": [],
+  "groups": [
+    {
+      "id": "985d104b-f8f5-4598-9b9b-2e9cc3378fe8",
+      "day_number": 1,
+      "group_number": 1,
+      "format": "best_ball_validation",
+      "created_at": "2026-02-22T00:36:23.66029+00:00"
+    },
+    {
+      "id": "798d00a1-75b5-4680-9db8-6285d2d6592c",
+      "day_number": 1,
+      "group_number": 2,
+      "format": "best_ball_validation",
+      "created_at": "2026-02-22T00:36:33.65669+00:00"
+    },
+    {
+      "id": "5c4f6768-7058-4ee0-9061-ccebd9d0fb4b",
+      "day_number": 1,
+      "group_number": 3,
+      "format": "best_ball_validation",
+      "created_at": "2026-02-22T00:36:42.994448+00:00"
+    }
+  ],
+  "group_players": [
+    {
+      "id": "88db3a6d-5d3e-44ea-b228-c6e67b9af09e",
+      "group_id": "985d104b-f8f5-4598-9b9b-2e9cc3378fe8",
+      "player_id": "06559478-aa82-4a0d-aa26-d239ae8414f4",
+      "playing_handicap": 3
+    },
+    {
+      "id": "60dff7f0-c2ef-43e1-b0e6-9dd3f9827a55",
+      "group_id": "985d104b-f8f5-4598-9b9b-2e9cc3378fe8",
+      "player_id": "2377121e-5093-4250-9459-9cec514d9ff4",
+      "playing_handicap": 0
+    },
+    {
+      "id": "99b28335-d64b-4f0a-9408-60b0a70b7d69",
+      "group_id": "985d104b-f8f5-4598-9b9b-2e9cc3378fe8",
+      "player_id": "c407edd3-591f-4faf-afed-c6e156698b33",
+      "playing_handicap": 1
+    },
+    {
+      "id": "b1b0f874-969c-42a7-a37f-639db38f3f41",
+      "group_id": "985d104b-f8f5-4598-9b9b-2e9cc3378fe8",
+      "player_id": "8ba6e2af-35d9-42bb-9750-f35fcbb9746c",
+      "playing_handicap": 5
+    },
+    {
+      "id": "c1e65572-faa3-4061-b95f-ec89ecfbb496",
+      "group_id": "798d00a1-75b5-4680-9db8-6285d2d6592c",
+      "player_id": "57a4fdd1-6cac-4264-ad8d-809aef763ee1",
+      "playing_handicap": 0
+    },
+    {
+      "id": "546d7977-5b93-4fb0-8528-542e97480fb1",
+      "group_id": "798d00a1-75b5-4680-9db8-6285d2d6592c",
+      "player_id": "5ac3e47e-68d3-4a66-a6ae-47376bdd9faf",
+      "playing_handicap": 1
+    },
+    {
+      "id": "79910731-c844-4919-a2de-dbd5cdc94e6a",
+      "group_id": "798d00a1-75b5-4680-9db8-6285d2d6592c",
+      "player_id": "989f9143-2f6b-4060-8875-20feb87ead55",
+      "playing_handicap": 0
+    },
+    {
+      "id": "d9bc12f7-8e5a-45cd-a7b6-5a79c37d3174",
+      "group_id": "798d00a1-75b5-4680-9db8-6285d2d6592c",
+      "player_id": "e2fc862d-3f4b-49f7-ac6f-97abecaad00e",
+      "playing_handicap": 6
+    },
+    {
+      "id": "d53be6f3-9628-408e-9518-3a2bd9efa840",
+      "group_id": "5c4f6768-7058-4ee0-9061-ccebd9d0fb4b",
+      "player_id": "e0928ef5-83fe-440c-8a1c-76704f4886af",
+      "playing_handicap": 0
+    },
+    {
+      "id": "e60f8ba7-a674-4de0-b8e4-87f5c7f72b46",
+      "group_id": "5c4f6768-7058-4ee0-9061-ccebd9d0fb4b",
+      "player_id": "6e49119a-2050-4e50-be46-42c2e89451b8",
+      "playing_handicap": 9
+    },
+    {
+      "id": "b7810fbb-bab9-4fdc-ac7f-db370a9c914c",
+      "group_id": "5c4f6768-7058-4ee0-9061-ccebd9d0fb4b",
+      "player_id": "2dcc566e-b465-431b-90a1-0f9791de614e",
+      "playing_handicap": 16
+    }
+  ],
+  "matches": [],
+  "match_players": []
+}

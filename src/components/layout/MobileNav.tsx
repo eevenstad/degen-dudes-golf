@@ -2,17 +2,29 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-const navItems = [
+const baseNavItems = [
   { href: '/', label: 'Home', icon: '🏠' },
   { href: '/scores', label: 'Scores', icon: '📝' },
+  { href: '/scorecards', label: 'Cards', icon: '📋' },
   { href: '/leaderboard', label: 'Board', icon: '🏆' },
   { href: '/matches', label: 'Matches', icon: '⚔️' },
-  { href: '/admin', label: 'Admin', icon: '⚙️' },
 ]
+
+const adminNavItem = { href: '/admin', label: 'Admin', icon: '⚙️' }
 
 export default function MobileNav() {
   const pathname = usePathname()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const name = localStorage.getItem('degen_player_name')
+    const admins = ['Eric', 'Ben']
+    setIsAdmin(admins.includes(name || ''))
+  }, [])
+
+  const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems
 
   return (
     <nav

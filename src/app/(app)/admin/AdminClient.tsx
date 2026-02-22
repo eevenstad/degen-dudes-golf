@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { updatePlayerTeam, updateSetting, updateGroupFormat, createGroup, createMatch } from '@/app/actions/data'
 import { logout } from '@/app/actions/auth'
 import { getGroupsForDay } from '@/app/actions/data'
@@ -370,8 +371,30 @@ function CreateMatchForm({
 }
 
 export default function AdminClient({ players, courses, settings, teeAssignments }: Props) {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
   const [tab, setTab] = useState<Tab>('players')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    const name = localStorage.getItem('degen_player_name')
+    const admins = ['Eric', 'Ben']
+    setIsAdmin(admins.includes(name || ''))
+  }, [])
+
+  if (isAdmin === null) {
+    // Still loading — show nothing to avoid flash
+    return null
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-xl font-bold text-white mb-2">Admin Access Required</h1>
+        <p style={{ color: '#9A9A50' }}>Only Eric and Ben can access admin settings.</p>
+        <Link href="/" className="mt-4 inline-block font-medium" style={{ color: '#D4A947' }}>← Back to Dashboard</Link>
+      </div>
+    )
+  }
   const [message, setMessage] = useState('')
   const [localPlayers, setLocalPlayers] = useState(players)
   const [groupsData, setGroupsData] = useState<Record<number, GroupData[]>>({})
