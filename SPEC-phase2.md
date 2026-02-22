@@ -196,12 +196,12 @@ Ben's response (verbatim):
 - [x] 1f: Conflict handling
 - [ ] 1g: Manual offline test (Eric verifies on phone)
 - [ ] 2a: Island player design doc (MUST be approved before 2b-2g)
-- [ ] 2b: Point value system
+- [x] 2b: Point value system
 - [ ] 2c: Island match creation
 - [ ] 2d: 2-on-1 match scoring
 - [ ] 2e: Island player visibility
 - [ ] 2f: No-repeat enforcement
-- [ ] 2g: Point totals updated
+- [x] 2g: Point totals updated
 - [ ] 3a: Score update banner
 - [ ] 3b: Supabase realtime trigger
 - [ ] 3c: Auto-dismiss
