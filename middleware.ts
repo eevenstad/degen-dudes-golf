@@ -8,7 +8,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon')
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/assets') ||
+    pathname.startsWith('/manifest') ||
+    pathname === '/sw.js'
   ) {
     return NextResponse.next()
   }
