@@ -1,0 +1,121 @@
+{
+  "backup_timestamp": "2026-02-21T17:18:02-07:00",
+  "players": [
+    {
+      "id": "6e49119a-2050-4e50-be46-42c2e89451b8",
+      "name": "Chris",
+      "handicap_index": 30.0,
+      "team": null,
+      "display_order": 10,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "2dcc566e-b465-431b-90a1-0f9791de614e",
+      "name": "Jauch",
+      "handicap_index": 36.0,
+      "team": null,
+      "display_order": 11,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "e0928ef5-83fe-440c-8a1c-76704f4886af",
+      "name": "Gary",
+      "handicap_index": 22.1,
+      "team": "Europe",
+      "display_order": 9,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "c407edd3-591f-4faf-afed-c6e156698b33",
+      "name": "Mack",
+      "handicap_index": 10.0,
+      "team": "Europe",
+      "display_order": 3,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "5ac3e47e-68d3-4a66-a6ae-47376bdd9faf",
+      "name": "C-Pat",
+      "handicap_index": 11.5,
+      "team": "Europe",
+      "display_order": 6,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "e2fc862d-3f4b-49f7-ac6f-97abecaad00e",
+      "name": "Ben",
+      "handicap_index": 19.0,
+      "team": "Europe",
+      "display_order": 8,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "06559478-aa82-4a0d-aa26-d239ae8414f4",
+      "name": "Ryan",
+      "handicap_index": 8.9,
+      "team": "Europe",
+      "display_order": 1,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "8ba6e2af-35d9-42bb-9750-f35fcbb9746c",
+      "name": "Bruce",
+      "handicap_index": 10.6,
+      "team": "USA",
+      "display_order": 4,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "989f9143-2f6b-4060-8875-20feb87ead55",
+      "name": "Eric",
+      "handicap_index": 13.5,
+      "team": "USA",
+      "display_order": 7,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "57a4fdd1-6cac-4264-ad8d-809aef763ee1",
+      "name": "Matthew",
+      "handicap_index": 11.0,
+      "team": "USA",
+      "display_order": 5,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    },
+    {
+      "id": "2377121e-5093-4250-9459-9cec514d9ff4",
+      "name": "Kiki",
+      "handicap_index": 9.3,
+      "team": "USA",
+      "display_order": 2,
+      "created_at": "2026-02-21T21:10:32.094589+00:00"
+    }
+  ],
+  "courses": [
+    {
+      "id": "9333b881-441e-43f0-9aa8-efe8f9dcd203",
+      "name": "Terra Lago North",
+      "day_number": 1,
+      "par_total": 72,
+      "created_at": "2026-02-21T21:10:32.170861+00:00"
+    },
+    {
+      "id": "fb74b2c0-b9df-4926-8867-13d83a2cdf7f",
+      "name": "PGA West Mountain",
+      "day_number": 2,
+      "par_total": 72,
+      "created_at": "2026-02-21T21:10:32.170861+00:00"
+    },
+    {
+      "id": "6a96b6d2-9271-4191-ba6c-da0232a9ca46",
+      "name": "Eagle Falls",
+      "day_number": 3,
+      "par_total": 72,
+      "created_at": "2026-02-21T21:10:32.170861+00:00"
+    }
+  ],
+  "scores": [],
+  "groups": [],
+  "group_players": [],
+  "matches": [],
+  "match_players": []
+}

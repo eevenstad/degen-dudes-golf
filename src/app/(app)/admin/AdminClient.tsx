@@ -479,7 +479,13 @@ export default function AdminClient({ players, courses, settings, teeAssignments
         {(['players', 'groups', 'matches', 'tees', 'settings'] as Tab[]).map(t => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => {
+              setTab(t)
+              // Auto-load groups when switching to matches tab
+              if (t === 'matches' && allGroupsFlat.length === 0) {
+                courses.forEach(c => loadGroups(c.day_number))
+              }
+            }}
             className="flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize"
             style={tabStyle(t)}
           >
@@ -625,9 +631,11 @@ export default function AdminClient({ players, courses, settings, teeAssignments
               onCancel={() => setShowCreateMatch(false)}
             />
           )}
-          <p className="text-xs" style={{ color: '#9A9A50' }}>
-            Load groups first (Groups tab) to see them when creating matches.
-          </p>
+          {allGroupsFlat.length === 0 && (
+            <p className="text-xs" style={{ color: '#9A9A50' }}>
+              Loading groups…
+            </p>
+          )}
         </div>
       )}
 

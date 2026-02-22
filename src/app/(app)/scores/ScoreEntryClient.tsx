@@ -75,6 +75,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   const [saving, setSaving] = useState(false)
   const [undoing, setUndoing] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
+  const [allowGroupOverride, setAllowGroupOverride] = useState(false)
 
   const netMaxOverPar = parseInt(settings.net_max_over_par || '3')
 
@@ -272,11 +273,14 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   }
 
   // STEP 2: Select group
-  if (selectedGroup === null) {
+  if (selectedGroup === null || allowGroupOverride) {
     return (
       <div className="p-4 space-y-4">
         <button
-          onClick={() => setSelectedDay(null)}
+          onClick={() => {
+            setSelectedDay(null)
+            setAllowGroupOverride(false)
+          }}
           className="text-sm font-medium"
           style={{ color: '#9A9A50' }}
         >
@@ -293,7 +297,10 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
             return (
               <button
                 key={group.id}
-                onClick={() => setSelectedGroup(group.group_number)}
+                onClick={() => {
+                  setSelectedGroup(group.group_number)
+                  setAllowGroupOverride(false)
+                }}
                 className="w-full p-5 rounded-xl border text-left active:scale-[0.98] transition-all"
                 style={{ background: 'rgba(26,58,42,0.6)', borderColor: '#2D4A1E' }}
               >
@@ -338,7 +345,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
       {/* Top bar: Course + Group info */}
       <div className="border-b px-3 py-2 flex items-center justify-between" style={{ background: '#1A3A2A', borderColor: '#2D4A1E' }}>
         <button
-          onClick={() => { setSelectedGroup(null); setSelectedHole(1) }}
+          onClick={() => { setSelectedGroup(null); setAllowGroupOverride(false); setSelectedHole(1) }}
           className="text-sm"
           style={{ color: '#9A9A50' }}
         >
@@ -347,6 +354,13 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
         <div className="text-center">
           <div className="text-xs" style={{ color: '#9A9A50' }}>Day {selectedDay} • Group {selectedGroup}</div>
           <div className="text-xs" style={{ color: '#5C5C2E' }}>{completedHoles()}/18 holes</div>
+          <button
+            onClick={() => setAllowGroupOverride(true)}
+            className="text-xs mt-0.5"
+            style={{ color: '#5C5C2E' }}
+          >
+            Change group
+          </button>
         </div>
         <div className="text-xs" style={{ color: '#5C5C2E' }}>
           {currentGroup?.format.replace(/_/g, ' ')}

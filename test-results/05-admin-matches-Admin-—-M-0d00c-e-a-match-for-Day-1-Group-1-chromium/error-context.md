@@ -1,0 +1,123 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "←" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - heading "⚙️ Admin" [level=1] [ref=e6]
+    - main [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - button "players" [active] [ref=e10]
+          - button "groups" [ref=e11]
+          - button "matches" [ref=e12]
+          - button "tees" [ref=e13]
+          - button "settings" [ref=e14]
+        - generic [ref=e15]:
+          - heading "Team Assignments" [level=3] [ref=e16]
+          - generic [ref=e18]:
+            - generic [ref=e19]:
+              - generic [ref=e20]: Ryan
+              - generic [ref=e21]: "HI: 8.9"
+            - generic [ref=e22]:
+              - button "🫡 USA" [ref=e23]
+              - button "🌍 EUR" [ref=e24]
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]: Kiki
+              - generic [ref=e29]: "HI: 9.3"
+            - generic [ref=e30]:
+              - button "🫡 USA" [ref=e31]
+              - button "🌍 EUR" [ref=e32]
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - generic [ref=e36]: Mack
+              - generic [ref=e37]: "HI: 10"
+            - generic [ref=e38]:
+              - button "🫡 USA" [ref=e39]
+              - button "🌍 EUR" [ref=e40]
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - generic [ref=e44]: Bruce
+              - generic [ref=e45]: "HI: 10.6"
+            - generic [ref=e46]:
+              - button "🫡 USA" [ref=e47]
+              - button "🌍 EUR" [ref=e48]
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]: Matthew
+              - generic [ref=e53]: "HI: 11"
+            - generic [ref=e54]:
+              - button "🫡 USA" [ref=e55]
+              - button "🌍 EUR" [ref=e56]
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]: C-Pat
+              - generic [ref=e61]: "HI: 11.5"
+            - generic [ref=e62]:
+              - button "🫡 USA" [ref=e63]
+              - button "🌍 EUR" [ref=e64]
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e68]: Eric
+              - generic [ref=e69]: "HI: 13.5"
+            - generic [ref=e70]:
+              - button "🫡 USA" [ref=e71]
+              - button "🌍 EUR" [ref=e72]
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]: Ben
+              - generic [ref=e77]: "HI: 19"
+            - generic [ref=e78]:
+              - button "🫡 USA" [ref=e79]
+              - button "🌍 EUR" [ref=e80]
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e84]: Gary
+              - generic [ref=e85]: "HI: 22.1"
+            - generic [ref=e86]:
+              - button "🫡 USA" [ref=e87]
+              - button "🌍 EUR" [ref=e88]
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e92]: Chris
+              - generic [ref=e93]: "HI: 30"
+            - generic [ref=e94]:
+              - button "🫡 USA" [ref=e95]
+              - button "🌍 EUR" [ref=e96]
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e100]: Jauch
+              - generic [ref=e101]: "HI: 36"
+            - generic [ref=e102]:
+              - button "🫡 USA" [ref=e103]
+              - button "🌍 EUR" [ref=e104]
+      - button "Help" [ref=e105]: "?"
+    - navigation [ref=e106]:
+      - generic [ref=e107]:
+        - link "🏠 Home" [ref=e108] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e109]: 🏠
+          - generic [ref=e110]: Home
+        - link "📝 Scores" [ref=e111] [cursor=pointer]:
+          - /url: /scores
+          - generic [ref=e112]: 📝
+          - generic [ref=e113]: Scores
+        - link "🏆 Board" [ref=e114] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e115]: 🏆
+          - generic [ref=e116]: Board
+        - link "⚔️ Matches" [ref=e117] [cursor=pointer]:
+          - /url: /matches
+          - generic [ref=e118]: ⚔️
+          - generic [ref=e119]: Matches
+        - link "⚙️ Admin" [ref=e120] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e121]: ⚙️
+          - generic [ref=e122]: Admin
+  - region "Notifications alt+T"
+  - alert [ref=e123]
+```

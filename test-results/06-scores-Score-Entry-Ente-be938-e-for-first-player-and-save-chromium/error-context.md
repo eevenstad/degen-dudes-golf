@@ -1,0 +1,102 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "←" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - heading "📝 Score Entry" [level=1] [ref=e6]
+    - main [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - button "← Groups" [ref=e10]
+          - generic [ref=e11]:
+            - generic [ref=e12]: Day 1 • Group 2
+            - generic [ref=e13]: 0/18 holes
+          - generic [ref=e14]: best ball validation
+        - generic [ref=e16]:
+          - button "1" [ref=e17]
+          - button "2" [ref=e18]
+          - button "3" [ref=e19]
+          - button "4" [ref=e20]
+          - button "5" [ref=e21]
+          - button "6" [ref=e22]
+          - button "7" [ref=e23]
+          - button "8" [ref=e24]
+          - button "9" [ref=e25]
+          - button "10" [ref=e26]
+          - button "11" [ref=e27]
+          - button "12" [ref=e28]
+          - button "13" [ref=e29]
+          - button "14" [ref=e30]
+          - button "15" [ref=e31]
+          - button "16" [ref=e32]
+          - button "17" [ref=e33]
+          - button "18" [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e37]: Hole 1
+          - generic [ref=e38]:
+            - generic [ref=e39]: Par 4
+            - generic [ref=e40]: HDCP 9
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e44]:
+              - text: Matthew
+              - generic [ref=e45]: "CH: 16 • PH: 0 • Black"
+            - generic [ref=e49]:
+              - button "−" [ref=e50]
+              - generic [ref=e52]: —
+              - button "+" [ref=e53]
+          - generic [ref=e54]:
+            - generic [ref=e56]:
+              - text: C-Pat
+              - generic [ref=e57]: "CH: 17 • PH: 1 • Black"
+            - generic [ref=e61]:
+              - button "−" [ref=e62]
+              - generic [ref=e64]: —
+              - button "+" [ref=e65]
+          - generic [ref=e66]:
+            - generic [ref=e68]:
+              - text: Eric
+              - generic [ref=e69]: "CH: 16 • PH: 0 • Yellow"
+            - generic [ref=e73]:
+              - button "−" [ref=e74]
+              - generic [ref=e76]: —
+              - button "+" [ref=e77]
+          - generic [ref=e78]:
+            - generic [ref=e80]:
+              - text: Ben
+              - generic [ref=e81]: "CH: 22 • PH: 6 • Yellow"
+            - generic [ref=e85]:
+              - button "−" [ref=e86]
+              - generic [ref=e88]: —
+              - button "+" [ref=e89]
+        - button "Save & Next →" [disabled] [ref=e91]
+      - button "Help" [ref=e92]: "?"
+    - navigation [ref=e93]:
+      - generic [ref=e94]:
+        - link "🏠 Home" [ref=e95] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e96]: 🏠
+          - generic [ref=e97]: Home
+        - link "📝 Scores" [ref=e98] [cursor=pointer]:
+          - /url: /scores
+          - generic [ref=e99]: 📝
+          - generic [ref=e100]: Scores
+        - link "🏆 Board" [ref=e101] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e102]: 🏆
+          - generic [ref=e103]: Board
+        - link "⚔️ Matches" [ref=e104] [cursor=pointer]:
+          - /url: /matches
+          - generic [ref=e105]: ⚔️
+          - generic [ref=e106]: Matches
+        - link "⚙️ Admin" [ref=e107] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e108]: ⚙️
+          - generic [ref=e109]: Admin
+  - region "Notifications alt+T"
+  - alert [ref=e110]
+```

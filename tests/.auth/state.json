@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "degen-auth",
+      "value": "authenticated",
+      "domain": "degen-dudes-golf.vercel.app",
+      "path": "/",
+      "expires": 1774312495.035889,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://degen-dudes-golf.vercel.app",
+      "localStorage": [
+        {
+          "name": "degen_player_name",
+          "value": "Eric"
+        }
+      ]
+    }
+  ]
+}
