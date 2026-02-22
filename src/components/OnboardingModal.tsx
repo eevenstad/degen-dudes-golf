@@ -1,17 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 
 const PLAYERS = ['Ryan', 'Kiki', 'Mack', 'Bruce', 'Matthew', 'C-Pat', 'Eric', 'Ben', 'Gary', 'Chris', 'Jauch']
 const STORAGE_KEY = 'degen_player_name'
 
+// Pages where onboarding modal should NOT appear
+const EXCLUDED_PATHS = ['/admin']
+
 export default function OnboardingModal() {
   const [show, setShow] = useState(false)
   const [step, setStep] = useState(1)
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
+    // Don't show on excluded pages (admin)
+    if (EXCLUDED_PATHS.some(p => pathname?.startsWith(p))) {
+      return
+    }
     // Check if already completed onboarding
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -21,7 +30,7 @@ export default function OnboardingModal() {
     } catch {
       // localStorage not available (SSR guard)
     }
-  }, [])
+  }, [pathname])
 
   const complete = (name: string) => {
     try {
