@@ -373,6 +373,7 @@ export default function AdminClient({ players, courses, settings, teeAssignments
   const [tab, setTab] = useState<Tab>('players')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [localPlayers, setLocalPlayers] = useState(players)
   const [groupsData, setGroupsData] = useState<Record<number, GroupData[]>>({})
   const [loadingGroups, setLoadingGroups] = useState<number | null>(null)
   const [allGroupsFlat, setAllGroupsFlat] = useState<GroupData[]>([])
@@ -390,6 +391,7 @@ export default function AdminClient({ players, courses, settings, teeAssignments
     const result = await updatePlayerTeam(playerId, team)
     if (result.success) {
       showMessage('Team updated')
+      setLocalPlayers(prev => prev.map(p => p.id === playerId ? { ...p, team } : p))
       router.refresh()
     } else {
       showMessage(`Error: ${result.error}`)
@@ -490,7 +492,7 @@ export default function AdminClient({ players, courses, settings, teeAssignments
       {tab === 'players' && (
         <div className="space-y-3">
           <h3 className="text-lg font-bold" style={{ color: '#9A9A50' }}>Team Assignments</h3>
-          {players.map(player => (
+          {localPlayers.map(player => (
             <div key={player.id} className="rounded-xl border p-3" style={{ background: 'rgba(26,58,42,0.4)', borderColor: '#2D4A1E' }}>
               <div className="flex items-center justify-between">
                 <div>
