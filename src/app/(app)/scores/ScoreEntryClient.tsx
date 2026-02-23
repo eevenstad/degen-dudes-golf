@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { getDayData } from '@/app/actions/data'
+import { getDayData, getMatchesForDay } from '@/app/actions/data'
 import { saveScore, undoLastScore } from '@/app/actions/scores'
 import { calcStrokesOnHole, calcNetScore } from '@/lib/scoring'
 import { useOfflineSync } from '@/hooks/useOfflineSync'
+import { createClient } from '@/lib/supabase/client'
 
 interface Course {
   id: string
@@ -55,9 +56,95 @@ interface TeeAssignment {
   tees?: { name: string }
 }
 
+interface MatchPlayer {
+  player_id: string
+  side: 'a' | 'b'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  players: any
+}
+
+interface Match {
+  id: string
+  group_id: string
+  match_number: number
+  format: string
+  team_a_label: string | null
+  team_b_label: string | null
+  team_a_points: number
+  team_b_points: number
+  status: string
+  point_value: number
+  match_players: MatchPlayer[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  groups: any
+}
+
+interface Notification {
+  id: string
+  message: string
+}
+
 interface Props {
   courses: Course[]
   settings: Record<string, string>
+}
+
+// Format a match ticker string for a given match
+function formatMatchTicker(match: Match): string {
+  const aPoints = match.team_a_points
+  const bPoints = match.team_b_points
+  const totalHoles = aPoints + bPoints
+
+  if (match.format === 'singles_match') {
+    // Singles: show player names
+    const sideA = match.match_players.filter(mp => mp.side === 'a')
+    const sideB = match.match_players.filter(mp => mp.side === 'b')
+    const nameA = sideA.map(mp => mp.players?.name || '?').join('/')
+    const nameB = sideB.map(mp => mp.players?.name || '?').join('/')
+    if (totalHoles === 0) return `${nameA} vs ${nameB} — no holes yet`
+    return `${nameA} ${aPoints} – ${nameB} ${bPoints} thru ${totalHoles}`
+  }
+
+  // Pairs / best_ball / low_total: show team labels
+  const labelA = match.team_a_label || 'USA'
+  const labelB = match.team_b_label || 'Europe'
+  if (totalHoles === 0) return `${labelA} vs ${labelB} — no holes yet`
+  return `${labelA} ${aPoints} – ${labelB} ${bPoints} thru ${totalHoles}`
+}
+
+// Find group number for a match
+function getGroupNumberForMatch(match: Match): number | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const groups = match.groups as any
+  if (!groups) return null
+  if (Array.isArray(groups)) return groups[0]?.group_number ?? null
+  return groups.group_number ?? null
+}
+
+// Build a notification message comparing old vs new match states
+function buildNotificationMessage(
+  oldMatch: Match,
+  newMatch: Match
+): string | null {
+  const groupNum = getGroupNumberForMatch(newMatch)
+  const aNew = newMatch.team_a_points
+  const bNew = newMatch.team_b_points
+  const aOld = oldMatch.team_a_points
+  const bOld = oldMatch.team_b_points
+
+  if (aNew === aOld && bNew === bOld) return null
+
+  const totalHoles = aNew + bNew
+  const labelA = newMatch.team_a_label || 'USA'
+  const labelB = newMatch.team_b_label || 'Europe'
+  const groupLabel = groupNum !== null ? `Group ${groupNum}` : 'Another group'
+
+  let leadStr: string
+  if (aNew > bNew) leadStr = `${labelA} leads ${aNew}–${bNew}`
+  else if (bNew > aNew) leadStr = `${labelB} leads ${bNew}–${aNew}`
+  else leadStr = `Tied ${aNew}–${bNew}`
+
+  return `${groupLabel} finished Hole ${totalHoles} — ${leadStr}`
 }
 
 export default function ScoreEntryClient({ courses, settings }: Props) {
@@ -77,6 +164,13 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   const [undoing, setUndoing] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [allowGroupOverride, setAllowGroupOverride] = useState(false)
+
+  // Feature 4: Match ticker state
+  const [groupMatches, setGroupMatches] = useState<Match[]>([])
+
+  // Feature 3: Notification state
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const prevMatchesRef = useRef<Map<string, Match>>(new Map())
 
   const { isOnline, queueLength, syncing, needsRefresh, enqueueScore } = useOfflineSync()
 
@@ -123,6 +217,117 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDay])
+
+  // Feature 4: Load match data for the current group
+  const loadMatchData = useCallback(async () => {
+    if (!selectedDay || selectedGroup === null) return
+    try {
+      const allMatches = await getMatchesForDay(selectedDay) as unknown as Match[]
+      const myGroupMatches = allMatches.filter(m => getGroupNumberForMatch(m) === selectedGroup)
+      setGroupMatches(myGroupMatches)
+    } catch {
+      // silently fail — non-critical
+    }
+  }, [selectedDay, selectedGroup])
+
+  // Load match data when entering step 3
+  useEffect(() => {
+    if (selectedDay !== null && selectedGroup !== null && !allowGroupOverride) {
+      loadMatchData()
+    }
+  }, [selectedDay, selectedGroup, allowGroupOverride, loadMatchData])
+
+  // Feature 3: Dismiss a notification
+  const dismissNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id))
+  }, [])
+
+  // Feature 3: Realtime subscription for score changes
+  useEffect(() => {
+    // Only subscribe when in step 3 (day + group selected, no override)
+    if (selectedDay === null || selectedGroup === null || allowGroupOverride) return
+
+    const supabase = createClient()
+
+    const handleScoreChange = async () => {
+      if (!selectedDay) return
+      try {
+        const allMatches = await getMatchesForDay(selectedDay) as unknown as Match[]
+
+        // Build map of current match states
+        const newMap = new Map<string, Match>()
+        allMatches.forEach(m => { newMap.set(m.id, m) })
+
+        // Determine which group the current user belongs to (may differ from selectedGroup if "Change group" was used)
+        let myGroupNum = selectedGroup
+        try {
+          const savedName = localStorage.getItem('degen_player_name')
+          if (savedName && savedName !== 'guest') {
+            const found = allMatches.find(m =>
+              m.match_players?.some(mp => mp.players?.name?.toLowerCase() === savedName.toLowerCase())
+            )
+            if (found) {
+              const gn = getGroupNumberForMatch(found)
+              if (gn !== null) myGroupNum = gn
+            }
+          }
+        } catch {
+          // localStorage not available
+        }
+
+        // Check for changes in OTHER groups
+        const prev = prevMatchesRef.current
+        const newNotifications: Notification[] = []
+
+        newMap.forEach((newMatch, id) => {
+          const matchGroupNum = getGroupNumberForMatch(newMatch)
+          if (matchGroupNum === myGroupNum) return // skip our group
+
+          const oldMatch = prev.get(id)
+          if (!oldMatch) return // first load, no comparison
+
+          const msg = buildNotificationMessage(oldMatch, newMatch)
+          if (msg) {
+            newNotifications.push({ id: `${id}-${Date.now()}`, message: msg })
+          }
+        })
+
+        prevMatchesRef.current = newMap
+
+        if (newNotifications.length > 0) {
+          setNotifications(prev => [...prev, ...newNotifications])
+          // Auto-dismiss each notification after 6 seconds
+          newNotifications.forEach(n => {
+            setTimeout(() => {
+              setNotifications(prev => prev.filter(x => x.id !== n.id))
+            }, 6000)
+          })
+        }
+
+        // Also update match ticker for our group
+        const myGroupMatches = allMatches.filter(m => getGroupNumberForMatch(m) === selectedGroup)
+        setGroupMatches(myGroupMatches)
+      } catch {
+        // silently fail
+      }
+    }
+
+    // Initialize prevMatchesRef by loading current state
+    getMatchesForDay(selectedDay).then(allMatches => {
+      const map = new Map<string, Match>()
+      ;(allMatches as unknown as Match[]).forEach(m => { map.set(m.id, m) })
+      prevMatchesRef.current = map
+    }).catch(() => {})
+
+    const channel = supabase
+      .channel('score-entry-scores')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, handleScoreChange)
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedDay, selectedGroup, allowGroupOverride])
 
   const currentHole = dayData?.holes.find(h => h.hole_number === selectedHole)
   const currentGroup = dayData?.groups.find(g => g.group_number === selectedGroup)
@@ -221,6 +426,10 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
       })
       setSavedHoles(newSaved)
       setSaveMessage('Saved!')
+
+      // Feature 4: Refresh match data after save (match points updated server-side)
+      loadMatchData()
+
       // Advance to next hole
       if (selectedHole < 18) {
         setTimeout(() => {
@@ -398,7 +607,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
             Change group
           </button>
         </div>
-        {/* Connection status indicator (1d) */}
+        {/* Connection status indicator */}
         <div className="flex flex-col items-end gap-0.5">
           {syncing ? (
             <div className="flex items-center gap-1">
@@ -427,6 +636,27 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
             <span className="text-xs" style={{ color: '#5C5C2E' }}>Day {selectedDay}</span>
           )}
         </div>
+      </div>
+
+      {/* Feature 3: Notification banner — slides in below top bar */}
+      <div className="relative overflow-hidden" style={{ zIndex: 40 }}>
+        {notifications.map(n => (
+          <div
+            key={n.id}
+            onClick={() => dismissNotification(n.id)}
+            className="px-4 py-2.5 flex items-center justify-between cursor-pointer select-none"
+            style={{
+              background: '#1A3A2A',
+              borderBottom: '1px solid #2D4A1E',
+              animation: 'slideInDown 0.3s ease-out',
+            }}
+          >
+            <span className="text-sm font-medium" style={{ color: '#D4A947' }}>
+              🏌️ {n.message}
+            </span>
+            <span className="text-xs ml-3 flex-shrink-0" style={{ color: '#9A9A50' }}>✕</span>
+          </div>
+        ))}
       </div>
 
       {/* Hole selector - scrollable */}
@@ -525,9 +755,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
                   <button
                     onClick={() => handleUndo(player.id)}
                     disabled={undoing}
-                    className="text-xs px-2 py-1 rounded bg-orange-900/40 text-orange-400 
-                               border border-orange-800/50 hover:bg-orange-900/60 transition-all
-                               disabled:opacity-40"
+                    className="text-xs px-2 py-1 rounded bg-orange-900/40 text-orange-400 border border-orange-800/50 hover:bg-orange-900/60 transition-all disabled:opacity-40"
                   >
                     ↩ Undo
                   </button>
@@ -581,6 +809,23 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
             </div>
           )
         })}
+
+        {/* Feature 4: Match ticker — shown below player cards, above save button */}
+        {groupMatches.length > 0 && (
+          <div
+            className="rounded-xl border px-4 py-3 space-y-1.5"
+            style={{ background: 'rgba(26,58,42,0.4)', borderColor: '#2D4A1E' }}
+          >
+            <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9A9A50' }}>
+              Your Match
+            </div>
+            {groupMatches.map(match => (
+              <div key={match.id} className="text-sm font-medium" style={{ color: '#F5E6C3' }}>
+                {formatMatchTicker(match)}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Save & Next button */}
@@ -609,6 +854,20 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
           {saving ? 'Saving...' : selectedHole < 18 ? `Save & Next →` : 'Save Hole 18 ✓'}
         </button>
       </div>
+
+      {/* CSS for slide-in animation */}
+      <style jsx global>{`
+        @keyframes slideInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
