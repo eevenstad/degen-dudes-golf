@@ -143,9 +143,9 @@ Ben's response (verbatim):
 **Why:** Fun post-round analysis.
 
 **Acceptance criteria:**
-- [ ] **8a: Stats on player page** — birdies, pars, bogeys, doubles+, scoring average per round
-- [ ] **8b: Computed from existing data** — no new tables, just queries against scores table
-- [ ] **8c: Best/worst hole** — highlight the player's best and worst scoring holes
+- [x] **8a: Stats on player page** — birdies, pars, bogeys, doubles+, scoring average per round
+- [x] **8b: Computed from existing data** — no new tables, just queries against scores table
+- [x] **8c: Best/worst hole** — highlight the player's best and worst scoring holes
 
 ## Constraints & Rules
 
@@ -219,9 +219,9 @@ Ben's response (verbatim):
 - [x] 7c: Auto-create matches
 - [x] 7d: Island player designation for Day 3
 - [x] 7e: Pick order input
-- [ ] 8a: Stats on player page
-- [ ] 8b: Computed from existing data
-- [ ] 8c: Best/worst hole
+- [x] 8a: Stats on player page
+- [x] 8b: Computed from existing data
+- [x] 8c: Best/worst hole
 
 ## Scope Hash
 34 items | 8 features | SHA: 11bb647be44b
