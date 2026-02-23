@@ -205,6 +205,15 @@ export default async function DashboardPage() {
           <span className="text-3xl mb-1">📋</span>
           Scorecards
         </Link>
+        <Link
+          href="/summary"
+          className="col-span-2 flex flex-col items-center justify-center p-4 rounded-2xl font-bold text-lg
+                     active:scale-95 transition-all border"
+          style={{ background: 'rgba(26,58,42,0.6)', borderColor: '#D4A947', color: '#D4A947' }}
+        >
+          <span className="text-3xl mb-1">📊</span>
+          Day Summary
+        </Link>
       </div>
 
       {/* Groups Status */}

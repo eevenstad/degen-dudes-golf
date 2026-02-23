@@ -209,9 +209,9 @@ Ben's response (verbatim):
 - [x] 4a: Running match score
 - [x] 4b: Updates on save
 - [x] 4c: Format-aware
-- [ ] 5a: Summary page/modal
-- [ ] 5b: Screenshot-friendly layout
-- [ ] 5c: Day selector
+- [x] 5a: Summary page/modal
+- [x] 5b: Screenshot-friendly layout
+- [x] 5c: Day selector
 - [x] 6a: Vibration on save
 - [x] 6b: Graceful fallback
 - [x] 7a: Matchup picker UI
