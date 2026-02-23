@@ -202,13 +202,13 @@ Ben's response (verbatim):
 - [x] 2e: Island player visibility
 - [x] 2f: No-repeat enforcement
 - [x] 2g: Point totals updated
-- [ ] 3a: Score update banner
-- [ ] 3b: Supabase realtime trigger
-- [ ] 3c: Auto-dismiss
-- [ ] 3d: Non-intrusive
-- [ ] 4a: Running match score
-- [ ] 4b: Updates on save
-- [ ] 4c: Format-aware
+- [x] 3a: Score update banner
+- [x] 3b: Supabase realtime trigger
+- [x] 3c: Auto-dismiss
+- [x] 3d: Non-intrusive
+- [x] 4a: Running match score
+- [x] 4b: Updates on save
+- [x] 4c: Format-aware
 - [ ] 5a: Summary page/modal
 - [ ] 5b: Screenshot-friendly layout
 - [ ] 5c: Day selector
