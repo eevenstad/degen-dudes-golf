@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { getDayData, getMatchesForDay } from '@/app/actions/data'
+import { getDayData, getRunningMatchScores } from '@/app/actions/data'
+import type { RunningMatchScore } from '@/app/actions/data'
 import { saveScore, undoLastScore } from '@/app/actions/scores'
 import { calcStrokesOnHole, calcNetScore } from '@/lib/scoring'
 import { useOfflineSync } from '@/hooks/useOfflineSync'
@@ -56,29 +57,6 @@ interface TeeAssignment {
   tees?: { name: string }
 }
 
-interface MatchPlayer {
-  player_id: string
-  side: 'a' | 'b'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  players: any
-}
-
-interface Match {
-  id: string
-  group_id: string
-  match_number: number
-  format: string
-  team_a_label: string | null
-  team_b_label: string | null
-  team_a_points: number
-  team_b_points: number
-  status: string
-  point_value: number
-  match_players: MatchPlayer[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  groups: any
-}
-
 interface Notification {
   id: string
   message: string
@@ -89,62 +67,46 @@ interface Props {
   settings: Record<string, string>
 }
 
-// Format a match ticker string for a given match
-function formatMatchTicker(match: Match): string {
-  const aPoints = match.team_a_points
-  const bPoints = match.team_b_points
-  const totalHoles = aPoints + bPoints
+// Format a match ticker string from running match score data
+function formatMatchTicker(m: RunningMatchScore): string {
+  const { teamARunning: a, teamBRunning: b, holesCompleted: thru } = m
 
-  if (match.format === 'singles_match') {
+  if (m.format === 'singles_match' || m.format === 'singles_stroke') {
     // Singles: show player names
-    const sideA = match.match_players.filter(mp => mp.side === 'a')
-    const sideB = match.match_players.filter(mp => mp.side === 'b')
-    const nameA = sideA.map(mp => mp.players?.name || '?').join('/')
-    const nameB = sideB.map(mp => mp.players?.name || '?').join('/')
-    if (totalHoles === 0) return `${nameA} vs ${nameB} — no holes yet`
-    return `${nameA} ${aPoints} – ${nameB} ${bPoints} thru ${totalHoles}`
+    const nameA = m.teamAPlayers.join('/')
+    const nameB = m.teamBPlayers.join('/')
+    if (thru === 0) return `${nameA} vs ${nameB}`
+    if (m.format === 'singles_stroke') {
+      // Stroke play: show total net scores (lower is better)
+      return `${nameA} ${a} – ${nameB} ${b} thru ${thru}`
+    }
+    return `${nameA} ${a} – ${nameB} ${b} thru ${thru}`
   }
 
-  // Pairs / best_ball / low_total: show team labels
-  const labelA = match.team_a_label || 'USA'
-  const labelB = match.team_b_label || 'Europe'
-  if (totalHoles === 0) return `${labelA} vs ${labelB} — no holes yet`
-  return `${labelA} ${aPoints} – ${labelB} ${bPoints} thru ${totalHoles}`
+  // Pairs: show team labels
+  if (thru === 0) return `${m.teamALabel} vs ${m.teamBLabel}`
+  return `${m.teamALabel} ${a} – ${m.teamBLabel} ${b} thru ${thru}`
 }
 
-// Find group number for a match
-function getGroupNumberForMatch(match: Match): number | null {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const groups = match.groups as any
-  if (!groups) return null
-  if (Array.isArray(groups)) return groups[0]?.group_number ?? null
-  return groups.group_number ?? null
-}
-
-// Build a notification message comparing old vs new match states
+// Build a notification message comparing old vs new running match scores
 function buildNotificationMessage(
-  oldMatch: Match,
-  newMatch: Match
+  oldM: RunningMatchScore,
+  newM: RunningMatchScore
 ): string | null {
-  const groupNum = getGroupNumberForMatch(newMatch)
-  const aNew = newMatch.team_a_points
-  const bNew = newMatch.team_b_points
-  const aOld = oldMatch.team_a_points
-  const bOld = oldMatch.team_b_points
+  if (newM.teamARunning === oldM.teamARunning &&
+      newM.teamBRunning === oldM.teamBRunning &&
+      newM.holesCompleted === oldM.holesCompleted) return null
 
-  if (aNew === aOld && bNew === bOld) return null
-
-  const totalHoles = aNew + bNew
-  const labelA = newMatch.team_a_label || 'USA'
-  const labelB = newMatch.team_b_label || 'Europe'
-  const groupLabel = groupNum !== null ? `Group ${groupNum}` : 'Another group'
+  const groupLabel = `Group ${newM.groupNumber}`
+  const a = newM.teamARunning
+  const b = newM.teamBRunning
 
   let leadStr: string
-  if (aNew > bNew) leadStr = `${labelA} leads ${aNew}–${bNew}`
-  else if (bNew > aNew) leadStr = `${labelB} leads ${bNew}–${aNew}`
-  else leadStr = `Tied ${aNew}–${bNew}`
+  if (a > b) leadStr = `${newM.teamALabel} leads ${a}–${b}`
+  else if (b > a) leadStr = `${newM.teamBLabel} leads ${b}–${a}`
+  else leadStr = `Tied ${a}–${b}`
 
-  return `${groupLabel} finished Hole ${totalHoles} — ${leadStr}`
+  return `${groupLabel} thru ${newM.holesCompleted} — ${leadStr}`
 }
 
 export default function ScoreEntryClient({ courses, settings }: Props) {
@@ -166,11 +128,11 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   const [allowGroupOverride, setAllowGroupOverride] = useState(false)
 
   // Feature 4: Match ticker state
-  const [groupMatches, setGroupMatches] = useState<Match[]>([])
+  const [groupMatches, setGroupMatches] = useState<RunningMatchScore[]>([])
 
   // Feature 3: Notification state
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const prevMatchesRef = useRef<Map<string, Match>>(new Map())
+  const prevMatchesRef = useRef<Map<string, RunningMatchScore>>(new Map())
 
   const { isOnline, queueLength, syncing, needsRefresh, enqueueScore } = useOfflineSync()
 
@@ -222,8 +184,8 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
   const loadMatchData = useCallback(async () => {
     if (!selectedDay || selectedGroup === null) return
     try {
-      const allMatches = await getMatchesForDay(selectedDay) as unknown as Match[]
-      const myGroupMatches = allMatches.filter(m => getGroupNumberForMatch(m) === selectedGroup)
+      const allRunning = await getRunningMatchScores(selectedDay)
+      const myGroupMatches = allRunning.filter(m => m.groupNumber === selectedGroup)
       setGroupMatches(myGroupMatches)
     } catch {
       // silently fail — non-critical
@@ -252,24 +214,23 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     const handleScoreChange = async () => {
       if (!selectedDay) return
       try {
-        const allMatches = await getMatchesForDay(selectedDay) as unknown as Match[]
+        const allRunning = await getRunningMatchScores(selectedDay)
 
         // Build map of current match states
-        const newMap = new Map<string, Match>()
-        allMatches.forEach(m => { newMap.set(m.id, m) })
+        const newMap = new Map<string, RunningMatchScore>()
+        allRunning.forEach(m => { newMap.set(m.matchId, m) })
 
-        // Determine which group the current user belongs to (may differ from selectedGroup if "Change group" was used)
+        // Determine which group the current user belongs to
         let myGroupNum = selectedGroup
         try {
           const savedName = localStorage.getItem('degen_player_name')
           if (savedName && savedName !== 'guest') {
-            const found = allMatches.find(m =>
-              m.match_players?.some(mp => mp.players?.name?.toLowerCase() === savedName.toLowerCase())
+            const found = allRunning.find(m =>
+              [...m.teamAPlayers, ...m.teamBPlayers].some(
+                name => name.toLowerCase() === savedName.toLowerCase()
+              )
             )
-            if (found) {
-              const gn = getGroupNumberForMatch(found)
-              if (gn !== null) myGroupNum = gn
-            }
+            if (found) myGroupNum = found.groupNumber
           }
         } catch {
           // localStorage not available
@@ -280,8 +241,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
         const newNotifications: Notification[] = []
 
         newMap.forEach((newMatch, id) => {
-          const matchGroupNum = getGroupNumberForMatch(newMatch)
-          if (matchGroupNum === myGroupNum) return // skip our group
+          if (newMatch.groupNumber === myGroupNum) return // skip our group
 
           const oldMatch = prev.get(id)
           if (!oldMatch) return // first load, no comparison
@@ -305,7 +265,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
         }
 
         // Also update match ticker for our group
-        const myGroupMatches = allMatches.filter(m => getGroupNumberForMatch(m) === selectedGroup)
+        const myGroupMatches = allRunning.filter(m => m.groupNumber === selectedGroup)
         setGroupMatches(myGroupMatches)
       } catch {
         // silently fail
@@ -313,9 +273,9 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
     }
 
     // Initialize prevMatchesRef by loading current state
-    getMatchesForDay(selectedDay).then(allMatches => {
-      const map = new Map<string, Match>()
-      ;(allMatches as unknown as Match[]).forEach(m => { map.set(m.id, m) })
+    getRunningMatchScores(selectedDay).then(allRunning => {
+      const map = new Map<string, RunningMatchScore>()
+      allRunning.forEach(m => { map.set(m.matchId, m) })
       prevMatchesRef.current = map
     }).catch(() => {})
 
@@ -820,7 +780,7 @@ export default function ScoreEntryClient({ courses, settings }: Props) {
               Your Match
             </div>
             {groupMatches.map(match => (
-              <div key={match.id} className="text-sm font-medium" style={{ color: '#F5E6C3' }}>
+              <div key={match.matchId} className="text-sm font-medium" style={{ color: '#F5E6C3' }}>
                 {formatMatchTicker(match)}
               </div>
             ))}

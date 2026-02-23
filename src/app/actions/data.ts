@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { calcStrokesOnHole, calcNetScore } from '@/lib/scoring'
 
 export async function getCourses() {
   const supabase = createAdminClient()
@@ -351,4 +352,191 @@ export async function getDayData(dayNumber: number) {
     scores: scores || [],
     teeAssignments: teeAssignments || [],
   }
+}
+
+/**
+ * Get running hole-by-hole match scores for all matches on a given day.
+ * Returns the internal tally (not scaled match-level points) + holes completed.
+ * Used by the match ticker (Feature 4) and notifications (Feature 3).
+ */
+export interface RunningMatchScore {
+  matchId: string
+  groupNumber: number
+  format: string
+  teamALabel: string
+  teamBLabel: string
+  teamAPlayers: string[]
+  teamBPlayers: string[]
+  teamARunning: number   // internal hole-by-hole points won by A
+  teamBRunning: number   // internal hole-by-hole points won by B
+  holesCompleted: number  // how many holes ALL players in the match have scored
+}
+
+export async function getRunningMatchScores(dayNumber: number): Promise<RunningMatchScore[]> {
+  const supabase = createAdminClient()
+
+  // Get course for this day
+  const { data: course } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('day_number', dayNumber)
+    .single()
+  if (!course) return []
+
+  // Get holes for the course
+  const { data: holes } = await supabase
+    .from('holes')
+    .select('hole_number, par, handicap_rank')
+    .eq('course_id', course.id)
+    .order('hole_number')
+  if (!holes) return []
+
+  // Get all matches for this day with players
+  const { data: matches } = await supabase
+    .from('matches')
+    .select(`
+      id, group_id, format, team_a_label, team_b_label,
+      match_players(player_id, side, players(name)),
+      groups!inner(day_number, group_number)
+    `)
+    .eq('groups.day_number', dayNumber)
+
+  if (!matches) return []
+
+  // Get all scores for this course
+  const { data: allScores } = await supabase
+    .from('scores')
+    .select('player_id, hole_number, gross_score')
+    .eq('course_id', course.id)
+  if (!allScores) return []
+
+  // Get playing handicaps for all groups on this day
+  const { data: allGroupPlayers } = await supabase
+    .from('group_players')
+    .select('player_id, playing_handicap, group_id, groups!inner(day_number)')
+    .eq('groups.day_number', dayNumber)
+
+  // Get net_max_over_par setting
+  const { data: setting } = await supabase
+    .from('settings')
+    .select('value')
+    .eq('key', 'net_max_over_par')
+    .single()
+  const netMaxOverPar = setting ? parseInt(setting.value) : 3
+
+  // Build score lookup: playerId -> holeNumber -> grossScore
+  const scoreMap = new Map<string, Map<number, number>>()
+  for (const s of allScores) {
+    if (!scoreMap.has(s.player_id)) scoreMap.set(s.player_id, new Map())
+    scoreMap.get(s.player_id)!.set(s.hole_number, s.gross_score)
+  }
+
+  // Build PH lookup: playerId -> playing_handicap
+  const phMap = new Map<string, number>()
+  allGroupPlayers?.forEach(gp => { phMap.set(gp.player_id, gp.playing_handicap) })
+
+  const results: RunningMatchScore[] = []
+
+  for (const match of matches) {
+    const matchPlayers = match.match_players || []
+    const sideA = matchPlayers.filter((mp: { side: string }) => mp.side === 'a')
+    const sideB = matchPlayers.filter((mp: { side: string }) => mp.side === 'b')
+    if (sideA.length === 0 || sideB.length === 0) continue
+
+    const allPlayerIds = matchPlayers.map((mp: { player_id: string }) => mp.player_id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const groups = match.groups as any
+    const groupNumber = Array.isArray(groups) ? groups[0]?.group_number : groups?.group_number
+
+    let teamARunning = 0
+    let teamBRunning = 0
+    let holesCompleted = 0
+
+    for (const hole of holes) {
+      // All players must have scores for this hole
+      const allHaveScores = allPlayerIds.every((pid: string) =>
+        scoreMap.get(pid)?.has(hole.hole_number)
+      )
+      if (!allHaveScores) continue
+      holesCompleted++
+
+      const getPhNet = (playerId: string): number => {
+        const ph = phMap.get(playerId) ?? 0
+        const gross = scoreMap.get(playerId)?.get(hole.hole_number)
+        if (gross === undefined) return 99
+        const strokes = calcStrokesOnHole(ph, hole.handicap_rank)
+        return calcNetScore(gross, strokes, hole.par, netMaxOverPar)
+      }
+
+      if (match.format === 'best_ball_validation' || match.format === 'best_ball') {
+        const useValidation = match.format === 'best_ball_validation'
+        const aNets = sideA.map((p: { player_id: string }) => getPhNet(p.player_id))
+        const bNets = sideB.map((p: { player_id: string }) => getPhNet(p.player_id))
+        const bestA = Math.min(...aNets)
+        const bestB = Math.min(...bNets)
+        if (bestA < bestB) teamARunning += 1
+        else if (bestB < bestA) teamBRunning += 1
+        else if (useValidation) {
+          const worstA = Math.max(...aNets)
+          const worstB = Math.max(...bNets)
+          if (worstA < worstB) teamARunning += 1
+          else if (worstB < worstA) teamBRunning += 1
+        }
+      } else if (match.format === 'low_total') {
+        const aNets = sideA.map((p: { player_id: string }) => getPhNet(p.player_id))
+        const bNets = sideB.map((p: { player_id: string }) => getPhNet(p.player_id))
+        const lowA = Math.min(...aNets)
+        const lowB = Math.min(...bNets)
+        const totalA = aNets.reduce((s: number, v: number) => s + v, 0)
+        const totalB = bNets.reduce((s: number, v: number) => s + v, 0)
+        if (lowA < lowB) teamARunning += 1
+        else if (lowB < lowA) teamBRunning += 1
+        if (totalA < totalB) teamARunning += 1
+        else if (totalB < totalA) teamBRunning += 1
+      } else if (match.format === 'singles_match') {
+        const netA = getPhNet(sideA[0].player_id)
+        const netB = getPhNet(sideB[0].player_id)
+        if (netA < netB) teamARunning += 1
+        else if (netB < netA) teamBRunning += 1
+        else { teamARunning += 0.5; teamBRunning += 0.5 }
+      }
+      // singles_stroke: no hole-by-hole tally (determined at end)
+    }
+
+    // For singles_stroke with 18 holes complete: compute winner
+    if (match.format === 'singles_stroke' && holesCompleted === 18) {
+      let totalA = 0, totalB = 0
+      for (const hole of holes) {
+        const phA = phMap.get(sideA[0].player_id) ?? 0
+        const phB = phMap.get(sideB[0].player_id) ?? 0
+        const grossA = scoreMap.get(sideA[0].player_id)?.get(hole.hole_number)
+        const grossB = scoreMap.get(sideB[0].player_id)?.get(hole.hole_number)
+        if (grossA !== undefined) {
+          totalA += calcNetScore(grossA, calcStrokesOnHole(phA, hole.handicap_rank), hole.par, netMaxOverPar)
+        }
+        if (grossB !== undefined) {
+          totalB += calcNetScore(grossB, calcStrokesOnHole(phB, hole.handicap_rank), hole.par, netMaxOverPar)
+        }
+      }
+      teamARunning = totalA
+      teamBRunning = totalB
+    }
+
+    results.push({
+      matchId: match.id,
+      groupNumber: groupNumber ?? 0,
+      format: match.format,
+      teamALabel: match.team_a_label || 'USA',
+      teamBLabel: match.team_b_label || 'Europe',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      teamAPlayers: sideA.map((p: any) => p.players?.name || '?'),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      teamBPlayers: sideB.map((p: any) => p.players?.name || '?'),
+      teamARunning,
+      teamBRunning,
+      holesCompleted,
+    })
+  }
+
+  return results
 }
