@@ -214,11 +214,11 @@ Ben's response (verbatim):
 - [ ] 5c: Day selector
 - [x] 6a: Vibration on save
 - [x] 6b: Graceful fallback
-- [ ] 7a: Matchup picker UI
-- [ ] 7b: Alternating picks
-- [ ] 7c: Auto-create matches
-- [ ] 7d: Island player designation for Day 3
-- [ ] 7e: Pick order input
+- [x] 7a: Matchup picker UI
+- [x] 7b: Alternating picks
+- [x] 7c: Auto-create matches
+- [x] 7d: Island player designation for Day 3
+- [x] 7e: Pick order input
 - [ ] 8a: Stats on player page
 - [ ] 8b: Computed from existing data
 - [ ] 8c: Best/worst hole

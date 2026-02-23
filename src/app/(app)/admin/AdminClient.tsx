@@ -550,6 +550,16 @@ export default function AdminClient({ players, courses, settings, teeAssignments
         </div>
       )}
 
+      {/* Day 3 Matchup Builder shortcut */}
+      <a
+        href="/admin/matchups"
+        className="flex items-center justify-between w-full rounded-xl border px-4 py-3 text-sm font-bold transition-all"
+        style={{ background: 'rgba(212,169,71,0.1)', borderColor: '#D4A947', color: '#D4A947' }}
+      >
+        <span>⛳ Day 3 Matchup Builder</span>
+        <span style={{ color: '#9A9A50' }}>→</span>
+      </a>
+
       {/* Tab bar */}
       <div className="flex gap-1 rounded-xl p-1" style={{ background: '#1A3A2A' }}>
         {(['players', 'groups', 'matches', 'island', 'tees', 'settings'] as Tab[]).map(t => (
